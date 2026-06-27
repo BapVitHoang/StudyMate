@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="@dimen/space_2xl">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="StudyMate"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="Lecture notes, reminders, and quick summaries for student life."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/studymate_text_secondary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2xl"
+            android:background="@drawable/bg_auth_panel"
+            android:orientation="vertical"
+            android:padding="@dimen/space_xl">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/login_title"
+                android:textAppearance="?attr/textAppearanceTitleLarge"
+                android:textColor="@color/studymate_text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/login_subtitle"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/studymate_text_secondary" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/loginEmailLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+            android:hint="Email"
+                app:boxBackgroundColor="@color/studymate_surface_soft"
+                app:boxBackgroundMode="filled"
+                app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+                app:boxCornerRadiusBottomStart="@dimen/field_radius"
+                app:boxCornerRadiusTopEnd="@dimen/field_radius"
+                app:boxCornerRadiusTopStart="@dimen/field_radius">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/loginEmailInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
+                android:inputType="textEmailAddress" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/loginPasswordLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+            android:hint="Password"
+                app:boxBackgroundColor="@color/studymate_surface_soft"
+                app:boxBackgroundMode="filled"
+                app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+                app:boxCornerRadiusBottomStart="@dimen/field_radius"
+                app:boxCornerRadiusTopEnd="@dimen/field_radius"
+                app:boxCornerRadiusTopStart="@dimen/field_radius"
+            app:endIconMode="password_toggle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/loginPasswordInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/loginButton"
+                    style="@style/StudyMateButtonPrimary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Login" />
+
+            <ProgressBar
+                android:id="@+id/loginLoadingProgress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                    android:layout_marginStart="@dimen/space_md"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/registerLinkText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+            android:gravity="center"
+                android:padding="@dimen/space_sm"
+            android:text="Create a new account"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="@color/studymate_primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

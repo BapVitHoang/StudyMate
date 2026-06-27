@@ -1,7 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.StudyMate" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/studymate_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/studymate_primary_container</item>
+        <item name="colorSecondary">@color/studymate_secondary</item>
+        <item name="colorError">@color/studymate_danger</item>
+        <item name="colorSurface">@color/studymate_surface</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:navigationBarColor">@color/studymate_background</item>
+        <item name="android:statusBarColor">@color/studymate_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

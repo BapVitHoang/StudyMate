@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">StudyMate</string>
+    <string name="my_study_notes">My Study Notes</string>
+    <string name="study_notes_subtitle">Capture lectures, homework ideas, and reminders in one calm place.</string>
+    <string name="search_notes">Search notes, tags, or content</string>
+    <string name="new_note">New Note</string>
+    <string name="edit_note">Edit Note</string>
+    <string name="create_first_note">No notes yet. Tap + to create your first study note.</string>
+    <string name="no_matching_notes">No notes match your current search or category.</string>
+    <string name="no_notes_found">No notes found.</string>
+    <string name="logout">Logout</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="summarize">Summarize</string>
+    <string name="set_reminder">Set reminder</string>
+    <string name="login_title">Welcome back</string>
+    <string name="login_subtitle">Sign in to keep your study notes synced for class.</string>
+    <string name="register_title">Create your StudyMate account</string>
+    <string name="register_subtitle">Start organizing notes for lectures, labs, and exam prep.</string>
 </resources>

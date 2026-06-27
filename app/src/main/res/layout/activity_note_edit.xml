@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/editScreenTitleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/new_note"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="@color/studymate_text_primary"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancelEditButton"
+                style="@style/StudyMateButtonText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/saveNoteButton"
+                style="@style/StudyMateButtonPrimary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:text="@string/save" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="Write freely, then organize when you are ready."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/studymate_text_secondary" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editTitleLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:hint="Note title"
+            app:boxBackgroundColor="@color/studymate_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+            app:boxCornerRadiusBottomStart="@dimen/field_radius"
+            app:boxCornerRadiusTopEnd="@dimen/field_radius"
+            app:boxCornerRadiusTopStart="@dimen/field_radius">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTitleInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences"
+                android:maxLines="2"
+                android:textColor="@color/studymate_text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editContentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:hint="Start typing your lecture notes..."
+            app:boxBackgroundColor="@color/studymate_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+            app:boxCornerRadiusBottomStart="@dimen/field_radius"
+            app:boxCornerRadiusTopEnd="@dimen/field_radius"
+            app:boxCornerRadiusTopStart="@dimen/field_radius">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editContentInput"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/note_editor_min_height"
+                android:gravity="top"
+                android:inputType="textMultiLine|textCapSentences"
+                android:lineSpacingExtra="4dp"
+                android:minLines="12"
+                android:textColor="@color/studymate_text_primary"
+                android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editCategoryLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:hint="Category"
+            app:boxBackgroundColor="@color/studymate_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+            app:boxCornerRadiusBottomStart="@dimen/field_radius"
+            app:boxCornerRadiusTopEnd="@dimen/field_radius"
+            app:boxCornerRadiusTopStart="@dimen/field_radius"
+            app:endIconMode="dropdown_menu">
+
+            <AutoCompleteTextView
+                android:id="@+id/editCategoryDropdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addCategoryButton"
+                style="@style/StudyMateButtonText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New category" />
+
+            <ProgressBar
+                android:id="@+id/categoryLoadingProgress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="@dimen/space_sm"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:hint="Tags, separated by commas"
+            app:boxBackgroundColor="@color/studymate_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+            app:boxCornerRadiusBottomStart="@dimen/field_radius"
+            app:boxCornerRadiusTopEnd="@dimen/field_radius"
+            app:boxCornerRadiusTopStart="@dimen/field_radius"
+            app:startIconDrawable="@drawable/ic_tag_24"
+            app:startIconTint="@color/studymate_secondary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTagsInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="@dimen/space_2xl">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="StudyMate"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="A calmer place for class notes and study reminders."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/studymate_text_secondary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2xl"
+            android:background="@drawable/bg_auth_panel"
+            android:orientation="vertical"
+            android:padding="@dimen/space_xl">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/register_title"
+                android:textAppearance="?attr/textAppearanceTitleLarge"
+                android:textColor="@color/studymate_text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/register_subtitle"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/studymate_text_secondary" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/registerNameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+            android:hint="Display name"
+                app:boxBackgroundColor="@color/studymate_surface_soft"
+                app:boxBackgroundMode="filled"
+                app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+                app:boxCornerRadiusBottomStart="@dimen/field_radius"
+                app:boxCornerRadiusTopEnd="@dimen/field_radius"
+                app:boxCornerRadiusTopStart="@dimen/field_radius">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/registerNameInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
+                android:inputType="textCapWords" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/registerEmailLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+            android:hint="Email"
+                app:boxBackgroundColor="@color/studymate_surface_soft"
+                app:boxBackgroundMode="filled"
+                app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+                app:boxCornerRadiusBottomStart="@dimen/field_radius"
+                app:boxCornerRadiusTopEnd="@dimen/field_radius"
+                app:boxCornerRadiusTopStart="@dimen/field_radius">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/registerEmailInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionNext"
+                android:inputType="textEmailAddress" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/registerPasswordLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+            android:hint="Password"
+                app:boxBackgroundColor="@color/studymate_surface_soft"
+                app:boxBackgroundMode="filled"
+                app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+                app:boxCornerRadiusBottomStart="@dimen/field_radius"
+                app:boxCornerRadiusTopEnd="@dimen/field_radius"
+                app:boxCornerRadiusTopStart="@dimen/field_radius"
+            app:endIconMode="password_toggle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/registerPasswordInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_lg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/registerButton"
+                    style="@style/StudyMateButtonPrimary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Register" />
+
+            <ProgressBar
+                android:id="@+id/registerLoadingProgress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                    android:layout_marginStart="@dimen/space_md"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/loginLinkText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+            android:gravity="center"
+                android:padding="@dimen/space_sm"
+            android:text="Already have an account? Login"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="@color/studymate_primary" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+
+        <TextView
+            android:id="@+id/detailTitleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="2dp"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/detailCategoryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_chip_primary"
+                android:paddingStart="@dimen/space_md"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="@dimen/space_md"
+                android:paddingBottom="@dimen/space_xs"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/studymate_chip_text"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/detailUpdatedAtText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_md"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="@color/studymate_text_secondary" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/detailTagsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:drawablePadding="@dimen/space_xs"
+            android:drawableStart="@drawable/ic_tag_24"
+            android:drawableTint="@color/studymate_secondary"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="@color/studymate_secondary" />
+
+        <TextView
+            android:id="@+id/detailReminderText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:drawablePadding="@dimen/space_xs"
+            android:drawableStart="@drawable/ic_reminder_24"
+            android:drawableTint="@color/studymate_accent"
+            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textColor="@color/studymate_text_secondary" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/editNoteButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Edit"
+                    app:icon="@drawable/ic_edit_24"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/studymate_primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/summarizeNoteButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:text="@string/summarize"
+                    app:icon="@drawable/ic_summary_24"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/studymate_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/reminderNoteButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:text="@string/set_reminder"
+                    app:icon="@drawable/ic_reminder_24"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/studymate_accent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/deleteNoteButton"
+                    style="@style/StudyMateButtonDanger"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:text="@string/delete"
+                    app:icon="@drawable/ic_delete_24"
+                    app:iconGravity="textStart" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="Note"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/detailContentText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:lineSpacingExtra="5dp"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="@color/studymate_text_primary" />
+
+        <TextView
+            android:id="@+id/detailSummaryTitleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="Summary"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/detailSummaryText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:background="@drawable/bg_summary_card"
+            android:lineSpacingExtra="4dp"
+            android:padding="@dimen/space_lg"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>
