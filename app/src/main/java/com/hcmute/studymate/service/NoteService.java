@@ -55,6 +55,16 @@ public class NoteService {
         noteRepository.deleteNote(userId, noteId, callback);
     }
 
+    public void setPinned(String userId, Note note, boolean pinned, OperationCallback callback) {
+        if (note == null) {
+            callback.onError(new IllegalArgumentException("Note is required"));
+            return;
+        }
+        note.setPinned(pinned);
+        note.setUpdatedAt(System.currentTimeMillis());
+        noteRepository.saveNote(userId, note, callback);
+    }
+
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }

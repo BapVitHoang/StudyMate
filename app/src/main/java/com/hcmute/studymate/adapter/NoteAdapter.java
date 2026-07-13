@@ -48,8 +48,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         Note note = notes.get(position);
         holder.titleText.setText(note.getTitle());
         holder.categoryText.setText(note.getCategory());
+        holder.statusText.setText(normalizeStatus(note.getStatus()));
         holder.previewText.setText(note.getContent());
         holder.updatedAtText.setText("Updated " + DateTimeUtils.formatDateTime(note.getUpdatedAt()));
+        holder.pinnedText.setVisibility(note.isPinned() ? View.VISIBLE : View.GONE);
 
         String tags = TagUtils.join(note.getTags());
         holder.tagsText.setVisibility(tags.isEmpty() ? View.GONE : View.VISIBLE);
@@ -73,19 +75,27 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     static class NoteViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleText;
         private final TextView categoryText;
+        private final TextView statusText;
         private final TextView previewText;
         private final TextView updatedAtText;
         private final TextView tagsText;
         private final TextView reminderText;
+        private final TextView pinnedText;
 
         NoteViewHolder(@NonNull View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.itemNoteTitle);
             categoryText = itemView.findViewById(R.id.itemNoteCategory);
+            statusText = itemView.findViewById(R.id.itemNoteStatus);
             previewText = itemView.findViewById(R.id.itemNotePreview);
             updatedAtText = itemView.findViewById(R.id.itemNoteUpdatedAt);
             tagsText = itemView.findViewById(R.id.itemNoteTags);
             reminderText = itemView.findViewById(R.id.itemNoteReminder);
+            pinnedText = itemView.findViewById(R.id.itemNotePinned);
         }
+    }
+
+    private String normalizeStatus(String status) {
+        return status == null || status.trim().isEmpty() ? "New" : status;
     }
 }

@@ -14,6 +14,10 @@
     <string name="delete">Delete</string>
     <string name="summarize">Summarize</string>
     <string name="set_reminder">Set reminder</string>
+    <string name="focus">Focus</string>
+    <string name="study_stats">Study Stats</string>
+    <string name="pin_note">Pin note</string>
+    <string name="unpin_note">Unpin note</string>
     <string name="login_title">Welcome back</string>
     <string name="login_subtitle">Sign in to keep your study notes synced for class.</string>
     <string name="register_title">Create your StudyMate account</string>

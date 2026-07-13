@@ -46,6 +46,12 @@ public class FirestoreNoteRepository implements NoteRepository {
                             notes.add(note);
                         }
                     }
+                    notes.sort((first, second) -> {
+                        if (first.isPinned() != second.isPinned()) {
+                            return first.isPinned() ? -1 : 1;
+                        }
+                        return Long.compare(second.getUpdatedAt(), first.getUpdatedAt());
+                    });
                     callback.onSuccess(notes);
                 })
                 .addOnFailureListener(callback::onError);

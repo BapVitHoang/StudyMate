@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/study_stats"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="Focus sessions from your recent study notes."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/studymate_text_secondary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:background="@drawable/bg_auth_panel"
+            android:orientation="vertical"
+            android:padding="@dimen/space_lg">
+
+            <TextView
+                android:id="@+id/statsTotalTimeText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0 min studied"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="@color/studymate_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/statsSessionCountText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="0 focus sessions"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="@color/studymate_text_primary" />
+
+            <TextView
+                android:id="@+id/statsTopCategoryText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="Top category: -"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/studymate_text_secondary" />
+
+            <TextView
+                android:id="@+id/statsLatestNoteText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="Latest note: -"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/studymate_text_secondary" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="Recent sessions"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/recentSessionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:orientation="vertical" />
+
+        <ProgressBar
+            android:id="@+id/statsLoadingProgress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/space_xl" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/statsBackButton"
+            style="@style/StudyMateButtonOutlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="Back" />
+
+    </LinearLayout>
+
+</ScrollView>

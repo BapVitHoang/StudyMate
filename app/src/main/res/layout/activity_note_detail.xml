@@ -42,6 +42,20 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/detailStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:background="@drawable/bg_warning_chip"
+                android:paddingStart="@dimen/space_md"
+                android:paddingTop="@dimen/space_xs"
+                android:paddingEnd="@dimen/space_md"
+                android:paddingBottom="@dimen/space_xs"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/studymate_accent"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/detailUpdatedAtText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -100,6 +114,17 @@
                     app:iconTint="@color/studymate_primary" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/pinNoteButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:text="@string/pin_note"
+                    app:icon="@drawable/ic_pin_24"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/studymate_primary" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/summarizeNoteButton"
                     style="@style/StudyMateButtonOutlined"
                     android:layout_width="wrap_content"
@@ -135,6 +160,144 @@
 
         </HorizontalScrollView>
 
+        <LinearLayout
+            android:id="@+id/focusTimerPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:background="@drawable/bg_focus_card"
+            android:orientation="vertical"
+            android:padding="@dimen/space_lg">
+
+            <TextView
+                android:id="@+id/focusTitleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/space_xs"
+                android:drawableStart="@drawable/ic_timer_24"
+                android:drawableTint="@color/studymate_primary"
+                android:text="Focus timer"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="@color/studymate_text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/focusTimeText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="25:00"
+                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                android:textColor="@color/studymate_primary"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/startFocusButton"
+                    style="@style/StudyMateButtonPrimary"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Start 25m"
+                    app:icon="@drawable/ic_timer_24"
+                    app:iconGravity="textStart" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/pauseFocusButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:text="Pause"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/stopFocusButton"
+                    style="@style/StudyMateButtonDanger"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:text="Stop"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/recordingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_lg"
+            android:background="@drawable/bg_auth_panel"
+            android:orientation="vertical"
+            android:padding="@dimen/space_lg">
+
+            <TextView
+                android:id="@+id/recordingTitleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/space_xs"
+                android:drawableStart="@drawable/ic_record_24"
+                android:text="Voice note"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="@color/studymate_text_primary"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/recordingStatusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="No recording yet"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/studymate_text_secondary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/startRecordingButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Record"
+                    app:icon="@drawable/ic_record_24"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/studymate_danger" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/stopRecordingButton"
+                    style="@style/StudyMateButtonDanger"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:layout_weight="1"
+                    android:text="Stop"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/recordingsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -152,6 +315,27 @@
             android:lineSpacingExtra="5dp"
             android:textAppearance="?attr/textAppearanceBodyLarge"
             android:textColor="@color/studymate_text_primary" />
+
+        <TextView
+            android:id="@+id/detailChecklistTitleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="Checklist"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/studymate_text_primary"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/detailChecklistContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:background="@drawable/bg_auth_panel"
+            android:orientation="vertical"
+            android:padding="@dimen/space_md"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/detailSummaryTitleText"

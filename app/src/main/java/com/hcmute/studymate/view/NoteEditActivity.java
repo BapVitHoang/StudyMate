@@ -24,9 +24,11 @@ import com.hcmute.studymate.controller.NoteController;
 import com.hcmute.studymate.model.Category;
 import com.hcmute.studymate.model.Note;
 import com.hcmute.studymate.utils.AppContainer;
+import com.hcmute.studymate.utils.ChecklistUtils;
 import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DataCallback;
 import com.hcmute.studymate.utils.ListCallback;
+import com.hcmute.studymate.utils.NoteTemplateUtils;
 import com.hcmute.studymate.utils.OperationCallback;
 import com.hcmute.studymate.utils.TagUtils;
 
@@ -35,6 +37,7 @@ import java.util.List;
 
 public class NoteEditActivity extends AppCompatActivity {
     private static final String EXTRA_NOTE_ID = "extra_note_id";
+    private static final String EXTRA_TEMPLATE_NAME = "extra_template_name";
 
     private AuthController authController;
     private NoteController noteController;
@@ -46,11 +49,14 @@ public class NoteEditActivity extends AppCompatActivity {
     private TextInputEditText titleInput;
     private TextInputEditText contentInput;
     private AutoCompleteTextView categoryDropdown;
+    private AutoCompleteTextView statusDropdown;
     private TextInputEditText tagsInput;
+    private TextInputEditText checklistInput;
     private MaterialButton saveButton;
     private MaterialButton addCategoryButton;
     private ProgressBar categoryLoadingProgress;
     private ArrayAdapter<String> categoryAdapter;
+    private ArrayAdapter<String> statusAdapter;
     private final List<String> categoryNames = new ArrayList<>();
     private Note currentNote;
     private String pendingCategorySelection = Constants.CATEGORY_GENERAL;
@@ -61,6 +67,12 @@ public class NoteEditActivity extends AppCompatActivity {
         if (noteId != null) {
             intent.putExtra(EXTRA_NOTE_ID, noteId);
         }
+        return intent;
+    }
+
+    public static Intent newTemplateIntent(Context context, String templateName) {
+        Intent intent = new Intent(context, NoteEditActivity.class);
+        intent.putExtra(EXTRA_TEMPLATE_NAME, templateName);
         return intent;
     }
 
@@ -82,7 +94,9 @@ public class NoteEditActivity extends AppCompatActivity {
         titleInput = findViewById(R.id.editTitleInput);
         contentInput = findViewById(R.id.editContentInput);
         categoryDropdown = findViewById(R.id.editCategoryDropdown);
+        statusDropdown = findViewById(R.id.editStatusDropdown);
         tagsInput = findViewById(R.id.editTagsInput);
+        checklistInput = findViewById(R.id.editChecklistInput);
         saveButton = findViewById(R.id.saveNoteButton);
         addCategoryButton = findViewById(R.id.addCategoryButton);
         categoryLoadingProgress = findViewById(R.id.categoryLoadingProgress);
@@ -91,6 +105,9 @@ public class NoteEditActivity extends AppCompatActivity {
         categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categoryNames);
         categoryDropdown.setAdapter(categoryAdapter);
         setCategorySelection(Constants.CATEGORY_GENERAL);
+        statusAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, Constants.NOTE_STATUSES);
+        statusDropdown.setAdapter(statusAdapter);
+        statusDropdown.setText(Constants.STATUS_NEW, false);
 
         saveButton.setOnClickListener(view -> saveNote());
         addCategoryButton.setOnClickListener(view -> showCreateCategoryDialog());
@@ -103,6 +120,11 @@ public class NoteEditActivity extends AppCompatActivity {
         if (noteId != null) {
             screenTitleText.setText(R.string.edit_note);
             loadNote(noteId);
+        } else {
+            String templateName = getIntent().getStringExtra(EXTRA_TEMPLATE_NAME);
+            if (templateName != null && !templateName.trim().isEmpty()) {
+                applyTemplate(templateName, true);
+            }
         }
         loadCategories();
         updateSaveState(false);
@@ -116,7 +138,9 @@ public class NoteEditActivity extends AppCompatActivity {
                 titleInput.setText(data.getTitle());
                 contentInput.setText(data.getContent());
                 setCategorySelection(data.getCategory());
+                statusDropdown.setText(normalizeStatus(data.getStatus()), false);
                 tagsInput.setText(TagUtils.join(data.getTags()));
+                checklistInput.setText(ChecklistUtils.joinLines(data.getChecklist()));
                 updateSaveState(false);
             }
 
@@ -167,7 +191,9 @@ public class NoteEditActivity extends AppCompatActivity {
         note.setTitle(readInput(titleInput));
         note.setContent(readInput(contentInput));
         note.setCategory(readCategory());
+        note.setStatus(normalizeStatus(readStatus()));
         note.setTags(TagUtils.parseCsv(readInput(tagsInput)));
+        note.setChecklist(ChecklistUtils.parseLines(readInput(checklistInput)));
         saveButton.setEnabled(false);
 
         noteController.saveNote(userId, note, new OperationCallback() {
@@ -236,6 +262,19 @@ public class NoteEditActivity extends AppCompatActivity {
         });
     }
 
+    private void applyTemplate(String templateName, boolean replaceExisting) {
+        if (replaceExisting || readInput(titleInput).isEmpty()) {
+            titleInput.setText(templateName);
+        }
+        if (replaceExisting || readInput(contentInput).isEmpty()) {
+            contentInput.setText(NoteTemplateUtils.contentFor(templateName));
+        }
+        if (replaceExisting || readInput(checklistInput).isEmpty()) {
+            checklistInput.setText(NoteTemplateUtils.checklistFor(templateName));
+        }
+        updateSaveState(false);
+    }
+
     private void setCategorySelection(String category) {
         pendingCategorySelection = category == null || category.trim().isEmpty()
                 ? Constants.CATEGORY_GENERAL
@@ -247,6 +286,22 @@ public class NoteEditActivity extends AppCompatActivity {
     private String readCategory() {
         String category = categoryDropdown.getText() == null ? "" : categoryDropdown.getText().toString().trim();
         return category.isEmpty() ? Constants.CATEGORY_GENERAL : category;
+    }
+
+    private String readStatus() {
+        return statusDropdown.getText() == null ? "" : statusDropdown.getText().toString().trim();
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return Constants.STATUS_NEW;
+        }
+        for (String allowedStatus : Constants.NOTE_STATUSES) {
+            if (allowedStatus.equals(status.trim())) {
+                return allowedStatus;
+            }
+        }
+        return Constants.STATUS_NEW;
     }
 
     private void setCategoryLoading(boolean loading) {

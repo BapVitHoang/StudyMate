@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +20,9 @@
         android:theme="@style/Theme.StudyMate">
         <activity
             android:name=".view.NoteDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.StudyStatsActivity"
             android:exported="false" />
         <activity
             android:name=".view.NoteEditActivity"
@@ -41,6 +48,18 @@
         <receiver
             android:name=".utils.ReminderReceiver"
             android:exported="false" />
+        <service
+            android:name=".service.FocusTimerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Focus timer for active study sessions" />
+        </service>
+        <service
+            android:name=".service.VoiceRecordingService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
     </application>
 
 </manifest>

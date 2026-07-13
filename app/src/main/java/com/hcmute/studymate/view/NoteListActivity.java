@@ -28,7 +28,9 @@ import com.hcmute.studymate.model.Category;
 import com.hcmute.studymate.model.Note;
 import com.hcmute.studymate.utils.AppContainer;
 import com.hcmute.studymate.utils.Constants;
+import com.hcmute.studymate.utils.DailyReviewScheduler;
 import com.hcmute.studymate.utils.ListCallback;
+import com.hcmute.studymate.utils.NoteTemplateUtils;
 import com.hcmute.studymate.utils.OperationCallback;
 
 import java.util.ArrayList;
@@ -69,6 +71,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         emptyStateText = findViewById(R.id.emptyStateText);
         notesLoadingProgress = findViewById(R.id.notesLoadingProgress);
         MaterialButton logoutButton = findViewById(R.id.logoutButton);
+        MaterialButton statsButton = findViewById(R.id.statsButton);
         FloatingActionButton addNoteFab = findViewById(R.id.addNoteFab);
         RecyclerView notesRecyclerView = findViewById(R.id.notesRecyclerView);
 
@@ -76,7 +79,8 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         notesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         notesRecyclerView.setAdapter(noteAdapter);
 
-        addNoteFab.setOnClickListener(view -> startActivity(NoteEditActivity.newIntent(this, null)));
+        addNoteFab.setOnClickListener(view -> showNewNoteOptions());
+        statsButton.setOnClickListener(view -> startActivity(new Intent(this, StudyStatsActivity.class)));
         logoutButton.setOnClickListener(view -> logout());
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -94,6 +98,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         });
         categoryNames.add(Constants.CATEGORY_ALL);
         renderCategoryChips(false);
+        DailyReviewScheduler.schedule(this);
     }
 
     @Override
@@ -109,6 +114,32 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
     @Override
     public void onNoteClick(Note note) {
         startActivity(NoteDetailActivity.newIntent(this, note.getId()));
+    }
+
+    private void showNewNoteOptions() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_create_note, null);
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        dialogView.findViewById(R.id.blankNoteCard).setOnClickListener(view -> {
+            dialog.dismiss();
+            startActivity(NoteEditActivity.newIntent(this, null));
+        });
+        dialogView.findViewById(R.id.templateNoteCard).setOnClickListener(view -> {
+            dialog.dismiss();
+            showTemplateOptions();
+        });
+        dialog.show();
+    }
+
+    private void showTemplateOptions() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Choose template")
+                .setItems(NoteTemplateUtils.TEMPLATE_NAMES, (dialog, which) -> {
+                    String templateName = NoteTemplateUtils.TEMPLATE_NAMES[which];
+                    startActivity(NoteEditActivity.newTemplateIntent(this, templateName));
+                })
+                .show();
     }
 
     private void loadCategories() {

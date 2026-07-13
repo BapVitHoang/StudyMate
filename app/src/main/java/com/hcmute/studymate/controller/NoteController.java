@@ -28,4 +28,8 @@ public class NoteController {
     public void deleteNote(String userId, String noteId, OperationCallback callback) {
         noteService.deleteNote(userId, noteId, callback);
     }
+
+    public void setPinned(String userId, Note note, boolean pinned, OperationCallback callback) {
+        noteService.setPinned(userId, note, pinned, callback);
+    }
 }

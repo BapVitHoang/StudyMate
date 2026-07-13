@@ -10,10 +10,16 @@ public class Note {
     private String content;
     private String category;
     private List<String> tags = new ArrayList<>();
+    private List<ChecklistItem> checklist = new ArrayList<>();
     private long createdAt;
     private long updatedAt;
     private Long reminderAt;
     private String summary;
+    private boolean pinned;
+    private String status;
+    private String recordingPath;
+    private long recordingDurationMillis;
+    private List<VoiceRecording> recordings = new ArrayList<>();
 
     public Note() {
     }
@@ -74,6 +80,14 @@ public class Note {
         this.tags = tags == null ? new ArrayList<>() : tags;
     }
 
+    public List<ChecklistItem> getChecklist() {
+        return checklist;
+    }
+
+    public void setChecklist(List<ChecklistItem> checklist) {
+        this.checklist = checklist == null ? new ArrayList<>() : checklist;
+    }
+
     public long getCreatedAt() {
         return createdAt;
     }
@@ -104,5 +118,45 @@ public class Note {
 
     public void setSummary(String summary) {
         this.summary = summary;
+    }
+
+    public boolean isPinned() {
+        return pinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        this.pinned = pinned;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRecordingPath() {
+        return recordingPath;
+    }
+
+    public void setRecordingPath(String recordingPath) {
+        this.recordingPath = recordingPath;
+    }
+
+    public long getRecordingDurationMillis() {
+        return recordingDurationMillis;
+    }
+
+    public void setRecordingDurationMillis(long recordingDurationMillis) {
+        this.recordingDurationMillis = recordingDurationMillis;
+    }
+
+    public List<VoiceRecording> getRecordings() {
+        return recordings;
+    }
+
+    public void setRecordings(List<VoiceRecording> recordings) {
+        this.recordings = recordings == null ? new ArrayList<>() : recordings;
     }
 }

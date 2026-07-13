@@ -105,6 +105,28 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/editStatusLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:hint="Status"
+            app:boxBackgroundColor="@color/studymate_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+            app:boxCornerRadiusBottomStart="@dimen/field_radius"
+            app:boxCornerRadiusTopEnd="@dimen/field_radius"
+            app:boxCornerRadiusTopStart="@dimen/field_radius"
+            app:endIconMode="dropdown_menu">
+
+            <AutoCompleteTextView
+                android:id="@+id/editStatusDropdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/editCategoryLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -169,6 +191,28 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:hint="Checklist, one item per line"
+            app:boxBackgroundColor="@color/studymate_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
+            app:boxCornerRadiusBottomStart="@dimen/field_radius"
+            app:boxCornerRadiusTopEnd="@dimen/field_radius"
+            app:boxCornerRadiusTopStart="@dimen/field_radius">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editChecklistInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:inputType="textMultiLine|textCapSentences"
+                android:minLines="4" />
 
         </com.google.android.material.textfield.TextInputLayout>
 

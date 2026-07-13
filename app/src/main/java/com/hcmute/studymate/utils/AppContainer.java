@@ -6,6 +6,7 @@ import com.hcmute.studymate.controller.NoteController;
 import com.hcmute.studymate.controller.ReminderController;
 import com.hcmute.studymate.controller.SearchController;
 import com.hcmute.studymate.controller.SummaryController;
+import com.hcmute.studymate.controller.StudySessionController;
 import com.hcmute.studymate.repository.AiSummaryRepository;
 import com.hcmute.studymate.repository.AuthRepository;
 import com.hcmute.studymate.repository.CategoryRepository;
@@ -13,15 +14,18 @@ import com.hcmute.studymate.repository.FirebaseAuthRepository;
 import com.hcmute.studymate.repository.FirestoreCategoryRepository;
 import com.hcmute.studymate.repository.FirestoreNoteRepository;
 import com.hcmute.studymate.repository.FirestoreReminderRepository;
+import com.hcmute.studymate.repository.FirestoreStudySessionRepository;
 import com.hcmute.studymate.repository.LocalAiSummaryRepository;
 import com.hcmute.studymate.repository.NoteRepository;
 import com.hcmute.studymate.repository.ReminderRepository;
+import com.hcmute.studymate.repository.StudySessionRepository;
 import com.hcmute.studymate.service.AuthService;
 import com.hcmute.studymate.service.CategoryService;
 import com.hcmute.studymate.service.NoteService;
 import com.hcmute.studymate.service.ReminderService;
 import com.hcmute.studymate.service.SearchService;
 import com.hcmute.studymate.service.SummaryService;
+import com.hcmute.studymate.service.StudySessionService;
 
 public final class AppContainer {
     private static final AuthRepository AUTH_REPOSITORY = new FirebaseAuthRepository();
@@ -29,6 +33,7 @@ public final class AppContainer {
     private static final CategoryRepository CATEGORY_REPOSITORY = new FirestoreCategoryRepository();
     private static final ReminderRepository REMINDER_REPOSITORY = new FirestoreReminderRepository();
     private static final AiSummaryRepository AI_SUMMARY_REPOSITORY = new LocalAiSummaryRepository();
+    private static final StudySessionRepository STUDY_SESSION_REPOSITORY = new FirestoreStudySessionRepository();
 
     private AppContainer() {
     }
@@ -55,5 +60,9 @@ public final class AppContainer {
 
     public static SummaryController summaryController() {
         return new SummaryController(new SummaryService(AI_SUMMARY_REPOSITORY));
+    }
+
+    public static StudySessionController studySessionController() {
+        return new StudySessionController(new StudySessionService(STUDY_SESSION_REPOSITORY));
     }
 }
