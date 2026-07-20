@@ -1,0 +1,19 @@
+## StudyMate local secrets (DO NOT COMMIT real keys)
+
+Copy these lines into your real `local.properties` file at the project root
+(Android Studio usually already creates this file for the SDK path):
+
+```
+sdk.dir=C\:\\Users\\YOUR_USER\\AppData\\Local\\Android\\Sdk
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+Then:
+1. File → Sync Project with Gradle Files
+2. Run the app
+
+Notes:
+- `local.properties` is gitignored.
+- AI features call Gemini directly from the phone (no Firebase Blaze).
+- Do not paste your API key into chat or commit it to GitHub.
+- If you already leaked a key, revoke it in Google AI Studio and create a new one.

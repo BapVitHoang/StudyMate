@@ -1,29 +1,30 @@
 package com.hcmute.studymate.repository;
 
-import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableResult;
+import com.hcmute.studymate.ai.GeminiApiClient;
+import com.hcmute.studymate.ai.GeminiPromptBuilder;
 import com.hcmute.studymate.model.RagAnswer;
 import com.hcmute.studymate.model.RagCitation;
 import com.hcmute.studymate.model.RetrievedChunk;
 import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DataCallback;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class CloudRagRepository {
-    private static final String FUNCTIONS_REGION = "asia-southeast1";
-
-    private final FirebaseFunctions functions;
+    private final GeminiApiClient geminiApiClient;
 
     public CloudRagRepository() {
-        this(FirebaseFunctions.getInstance(FUNCTIONS_REGION));
+        this(GeminiApiClient.getInstance());
     }
 
-    CloudRagRepository(FirebaseFunctions functions) {
-        this.functions = functions;
+    CloudRagRepository(GeminiApiClient geminiApiClient) {
+        this.geminiApiClient = geminiApiClient;
     }
 
     public void answerFromNotes(String question, List<RetrievedChunk> passages, String locale,
@@ -37,81 +38,68 @@ public class CloudRagRepository {
             return;
         }
 
-        List<Map<String, Object>> payloadPassages = new ArrayList<>();
-        for (RetrievedChunk passage : passages) {
-            if (passage.getChunk() == null) {
-                continue;
+        String safeLocale = locale == null ? "en" : locale;
+        String prompt = GeminiPromptBuilder.groundedAnswer(safeLocale, question.trim(), passages);
+        geminiApiClient.generateJsonAsync(prompt, 0.2, new GeminiApiClient.JsonCallback() {
+            @Override
+            public void onSuccess(JSONObject json) {
+                try {
+                    callback.onSuccess(parseAnswer(json, passages));
+                } catch (Exception exception) {
+                    callback.onError(exception);
+                }
             }
-            Map<String, Object> item = new HashMap<>();
-            item.put("noteId", passage.getChunk().getNoteId());
-            item.put("chunkId", passage.getChunk().getId());
-            item.put("title", passage.getChunk().getTitle());
-            item.put("text", passage.getChunk().getText());
-            payloadPassages.add(item);
-        }
 
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("question", question.trim());
-        payload.put("locale", locale == null ? "en" : locale);
-        payload.put("passages", payloadPassages);
-
-        functions.getHttpsCallable(Constants.CALLABLE_ANSWER_FROM_NOTES)
-                .call(payload)
-                .addOnSuccessListener(result -> {
-                    try {
-                        callback.onSuccess(parseAnswer(result));
-                    } catch (Exception exception) {
-                        callback.onError(exception);
-                    }
-                })
-                .addOnFailureListener(callback::onError);
+            @Override
+            public void onError(Exception exception) {
+                callback.onError(exception);
+            }
+        });
     }
 
-    @SuppressWarnings("unchecked")
-    private RagAnswer parseAnswer(HttpsCallableResult callableResult) {
-        Object raw = callableResult.getData();
-        if (!(raw instanceof Map)) {
-            throw new IllegalStateException("Unexpected RAG response payload");
-        }
-        Map<String, Object> data = (Map<String, Object>) raw;
-        String answer = asString(data.get("answer"));
-        if (answer == null || answer.trim().isEmpty()) {
+    private RagAnswer parseAnswer(JSONObject data, List<RetrievedChunk> passages) throws Exception {
+        String answer = data.optString("answer", "").trim();
+        if (answer.isEmpty()) {
             throw new IllegalStateException("Empty RAG answer");
         }
 
-        List<RagCitation> citations = new ArrayList<>();
-        Object citationsRaw = data.get("citations");
-        if (citationsRaw instanceof List) {
-            for (Object item : (List<?>) citationsRaw) {
-                if (!(item instanceof Map)) {
-                    continue;
-                }
-                Map<String, Object> map = (Map<String, Object>) item;
-                citations.add(new RagCitation(
-                        asString(map.get("noteId")),
-                        asString(map.get("title")),
-                        asString(map.get("excerpt"))
-                ));
+        Set<String> allowed = new HashSet<>();
+        for (RetrievedChunk passage : passages) {
+            if (passage.getChunk() != null && passage.getChunk().getNoteId() != null) {
+                allowed.add(passage.getChunk().getNoteId());
             }
         }
 
-        long generatedAt = System.currentTimeMillis();
-        Object generatedRaw = data.get("generatedAt");
-        if (generatedRaw instanceof Number) {
-            generatedAt = ((Number) generatedRaw).longValue();
+        List<RagCitation> citations = new ArrayList<>();
+        JSONArray citationsRaw = data.optJSONArray("citations");
+        if (citationsRaw != null) {
+            for (int i = 0; i < citationsRaw.length(); i++) {
+                JSONObject item = citationsRaw.optJSONObject(i);
+                if (item == null) {
+                    continue;
+                }
+                String noteId = item.optString("noteId", "").trim();
+                if (noteId.isEmpty() || !allowed.contains(noteId)) {
+                    continue;
+                }
+                citations.add(new RagCitation(
+                        noteId,
+                        item.optString("title", ""),
+                        item.optString("excerpt", "")
+                ));
+                if (citations.size() >= 5) {
+                    break;
+                }
+            }
+        }
+        if (citations.isEmpty() && passages.get(0).getChunk() != null) {
+            citations.add(new RagCitation(
+                    passages.get(0).getChunk().getNoteId(),
+                    passages.get(0).getChunk().getTitle(),
+                    GeminiApiClient.truncate(passages.get(0).getChunk().getText(), 180)
+            ));
         }
 
-        return new RagAnswer(answer, citations,
-                asStringOrDefault(data.get("source"), Constants.SUMMARY_SOURCE_CLOUD),
-                generatedAt);
-    }
-
-    private String asString(Object value) {
-        return value == null ? null : String.valueOf(value).trim();
-    }
-
-    private String asStringOrDefault(Object value, String fallback) {
-        String text = asString(value);
-        return text == null || text.isEmpty() ? fallback : text;
+        return new RagAnswer(answer, citations, Constants.RAG_SOURCE_CLOUD, System.currentTimeMillis());
     }
 }

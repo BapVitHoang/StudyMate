@@ -1,99 +1,113 @@
 package com.hcmute.studymate.repository;
 
-import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableResult;
+import com.hcmute.studymate.ai.GeminiApiClient;
+import com.hcmute.studymate.ai.GeminiPromptBuilder;
 import com.hcmute.studymate.model.Concept;
 import com.hcmute.studymate.model.ConceptEdge;
-import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DataCallback;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
+import java.util.Set;
 
 public class CloudConceptRepository {
-    private static final String FUNCTIONS_REGION = "asia-southeast1";
-    private final FirebaseFunctions functions;
+    private final GeminiApiClient geminiApiClient;
 
     public CloudConceptRepository() {
-        this(FirebaseFunctions.getInstance(FUNCTIONS_REGION));
+        this(GeminiApiClient.getInstance());
     }
 
-    CloudConceptRepository(FirebaseFunctions functions) {
-        this.functions = functions;
+    CloudConceptRepository(GeminiApiClient geminiApiClient) {
+        this.geminiApiClient = geminiApiClient;
     }
 
     public void extract(String noteId, String title, String content, String locale,
                         DataCallback<ExtractResult> callback) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("noteId", noteId);
-        payload.put("title", title);
-        payload.put("content", content);
-        payload.put("locale", locale == null ? "en" : locale);
+        if (content == null || content.trim().isEmpty()) {
+            callback.onError(new IllegalArgumentException("Note content is required"));
+            return;
+        }
+        String safeLocale = locale == null ? "en" : locale;
+        String prompt = GeminiPromptBuilder.concepts(safeLocale, noteId, title, content);
+        geminiApiClient.generateJsonAsync(prompt, 0.2, new GeminiApiClient.JsonCallback() {
+            @Override
+            public void onSuccess(JSONObject json) {
+                try {
+                    callback.onSuccess(parse(json, noteId));
+                } catch (Exception exception) {
+                    callback.onError(exception);
+                }
+            }
 
-        functions.getHttpsCallable(Constants.CALLABLE_EXTRACT_CONCEPTS)
-                .call(payload)
-                .addOnSuccessListener(result -> {
-                    try {
-                        callback.onSuccess(parse(result, noteId));
-                    } catch (Exception exception) {
-                        callback.onError(exception);
-                    }
-                })
-                .addOnFailureListener(callback::onError);
+            @Override
+            public void onError(Exception exception) {
+                callback.onError(exception);
+            }
+        });
     }
 
-    @SuppressWarnings("unchecked")
-    private ExtractResult parse(HttpsCallableResult callableResult, String noteId) {
-        Object raw = callableResult.getData();
-        if (!(raw instanceof Map)) {
-            throw new IllegalStateException("Unexpected concept response");
-        }
-        Map<String, Object> data = (Map<String, Object>) raw;
+    private ExtractResult parse(JSONObject data, String noteId) throws Exception {
         List<Concept> concepts = new ArrayList<>();
-        Object conceptsRaw = data.get("concepts");
-        if (conceptsRaw instanceof List) {
-            for (Object item : (List<?>) conceptsRaw) {
-                if (!(item instanceof Map)) {
+        Set<String> nameSet = new HashSet<>();
+        JSONArray conceptsRaw = data.optJSONArray("concepts");
+        if (conceptsRaw != null) {
+            for (int i = 0; i < conceptsRaw.length() && concepts.size() < 12; i++) {
+                JSONObject item = conceptsRaw.optJSONObject(i);
+                if (item == null) {
                     continue;
                 }
-                Map<String, Object> map = (Map<String, Object>) item;
+                String name = item.optString("name", "").trim();
+                if (name.isEmpty() || !nameSet.add(name.toLowerCase(Locale.US))) {
+                    continue;
+                }
                 Concept concept = new Concept();
-                concept.setName(asString(map.get("name")));
-                concept.setDefinition(asString(map.get("definition")));
-                Object importance = map.get("importance");
-                concept.setImportance(importance instanceof Number
-                        ? ((Number) importance).doubleValue() : 0.5);
+                concept.setName(name);
+                concept.setDefinition(item.optString("definition", ""));
+                double importance = item.optDouble("importance", 0.5);
+                if (Double.isNaN(importance)) {
+                    importance = 0.5;
+                }
+                concept.setImportance(Math.max(0, Math.min(1, importance)));
                 List<String> noteIds = new ArrayList<>();
-                if (noteId != null) {
+                if (noteId != null && !noteId.trim().isEmpty()) {
                     noteIds.add(noteId);
                 }
                 concept.setNoteIds(noteIds);
                 concepts.add(concept);
             }
         }
+
         List<ConceptEdge> edges = new ArrayList<>();
-        Object edgesRaw = data.get("edges");
-        if (edgesRaw instanceof List) {
-            for (Object item : (List<?>) edgesRaw) {
-                if (!(item instanceof Map)) {
+        JSONArray edgesRaw = data.optJSONArray("edges");
+        if (edgesRaw != null) {
+            for (int i = 0; i < edgesRaw.length() && edges.size() < 20; i++) {
+                JSONObject item = edgesRaw.optJSONObject(i);
+                if (item == null) {
                     continue;
                 }
-                Map<String, Object> map = (Map<String, Object>) item;
+                String from = item.optString("from", "").trim();
+                String to = item.optString("to", "").trim();
+                if (from.isEmpty() || to.isEmpty() || from.equalsIgnoreCase(to)) {
+                    continue;
+                }
                 ConceptEdge edge = new ConceptEdge();
-                edge.setFromName(asString(map.get("from")));
-                edge.setToName(asString(map.get("to")));
-                edge.setRelation(asString(map.get("relation")));
+                edge.setFromName(from);
+                edge.setToName(to);
+                String relation = item.optString("relation", "relatedTo").trim();
+                edge.setRelation("prerequisiteOf".equals(relation) ? "prerequisiteOf" : "relatedTo");
                 edge.setNoteId(noteId);
                 edges.add(edge);
             }
         }
+        if (concepts.isEmpty()) {
+            throw new IllegalStateException("Gemini returned no concepts");
+        }
         return new ExtractResult(concepts, edges);
-    }
-
-    private String asString(Object value) {
-        return value == null ? null : String.valueOf(value).trim();
     }
 
     public static final class ExtractResult {

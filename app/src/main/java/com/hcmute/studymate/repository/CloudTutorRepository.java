@@ -1,124 +1,135 @@
 package com.hcmute.studymate.repository;
 
-import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableResult;
+import com.hcmute.studymate.ai.GeminiApiClient;
+import com.hcmute.studymate.ai.GeminiPromptBuilder;
 import com.hcmute.studymate.model.RagCitation;
 import com.hcmute.studymate.model.RetrievedChunk;
 import com.hcmute.studymate.model.TutorMessage;
 import com.hcmute.studymate.model.TutorReply;
 import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DataCallback;
-import com.hcmute.studymate.utils.PassagePayloadMapper;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class CloudTutorRepository {
-    private static final String FUNCTIONS_REGION = "asia-southeast1";
-    private final FirebaseFunctions functions;
+    private final GeminiApiClient geminiApiClient;
 
     public CloudTutorRepository() {
-        this(FirebaseFunctions.getInstance(FUNCTIONS_REGION));
+        this(GeminiApiClient.getInstance());
     }
 
-    CloudTutorRepository(FirebaseFunctions functions) {
-        this.functions = functions;
+    CloudTutorRepository(GeminiApiClient geminiApiClient) {
+        this.geminiApiClient = geminiApiClient;
     }
 
     public void chat(List<TutorMessage> messages, List<RetrievedChunk> passages, String locale,
                      DataCallback<TutorReply> callback) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("locale", locale == null ? "en" : locale);
-        payload.put("passages", PassagePayloadMapper.toPayload(passages));
-        List<Map<String, Object>> messagePayload = new ArrayList<>();
-        if (messages != null) {
-            for (TutorMessage message : messages) {
-                if (message == null) {
-                    continue;
-                }
-                Map<String, Object> item = new HashMap<>();
-                item.put("role", message.getRole());
-                item.put("content", message.getContent());
-                messagePayload.add(item);
-            }
+        if (messages == null || messages.isEmpty()) {
+            callback.onError(new IllegalArgumentException("At least one chat message is required"));
+            return;
         }
-        payload.put("messages", messagePayload);
+        if (passages == null || passages.isEmpty()) {
+            callback.onError(new IllegalArgumentException("At least one passage is required"));
+            return;
+        }
 
-        functions.getHttpsCallable(Constants.CALLABLE_TUTOR_CHAT)
-                .call(payload)
-                .addOnSuccessListener(result -> {
-                    try {
-                        callback.onSuccess(parseReply(result));
-                    } catch (Exception exception) {
-                        callback.onError(exception);
-                    }
-                })
-                .addOnFailureListener(callback::onError);
+        StringBuilder history = new StringBuilder();
+        for (TutorMessage message : messages) {
+            if (message == null || message.getContent() == null) {
+                continue;
+            }
+            history.append(String.valueOf(message.getRole()).toUpperCase())
+                    .append(": ")
+                    .append(message.getContent())
+                    .append('\n');
+        }
+
+        String safeLocale = locale == null ? "en" : locale;
+        String prompt = GeminiPromptBuilder.tutor(safeLocale, history.toString().trim(), passages);
+        geminiApiClient.generateJsonAsync(prompt, 0.3, new GeminiApiClient.JsonCallback() {
+            @Override
+            public void onSuccess(JSONObject json) {
+                try {
+                    callback.onSuccess(parseReply(json, passages));
+                } catch (Exception exception) {
+                    callback.onError(exception);
+                }
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                callback.onError(exception);
+            }
+        });
     }
 
-    @SuppressWarnings("unchecked")
-    private TutorReply parseReply(HttpsCallableResult callableResult) {
-        Object raw = callableResult.getData();
-        if (!(raw instanceof Map)) {
-            throw new IllegalStateException("Unexpected tutor response");
+    private TutorReply parseReply(JSONObject data, List<RetrievedChunk> passages) throws Exception {
+        String answer = data.optString("answer", "").trim();
+        if (answer.isEmpty()) {
+            throw new IllegalStateException("Empty tutor answer");
         }
-        Map<String, Object> data = (Map<String, Object>) raw;
+
         TutorReply reply = new TutorReply();
-        reply.setAnswer(asString(data.get("answer")));
-        reply.setSource(asStringOrDefault(data.get("source"), Constants.RAG_SOURCE_CLOUD));
-        reply.setGeneratedAt(asLong(data.get("generatedAt"), System.currentTimeMillis()));
-        reply.setCitations(parseCitations(data.get("citations")));
+        reply.setAnswer(answer);
+        reply.setSource(Constants.RAG_SOURCE_CLOUD);
+        reply.setGeneratedAt(System.currentTimeMillis());
+        reply.setCitations(parseCitations(data.optJSONArray("citations"), passages));
+
         List<String> followUps = new ArrayList<>();
-        Object followRaw = data.get("suggestedFollowUps");
-        if (followRaw instanceof List) {
-            for (Object item : (List<?>) followRaw) {
-                if (item != null) {
-                    followUps.add(String.valueOf(item));
+        JSONArray followRaw = data.optJSONArray("suggestedFollowUps");
+        if (followRaw != null) {
+            for (int i = 0; i < followRaw.length() && followUps.size() < 3; i++) {
+                String text = followRaw.optString(i, "").trim();
+                if (!text.isEmpty()) {
+                    followUps.add(text);
                 }
             }
         }
         reply.setSuggestedFollowUps(followUps);
-        if (reply.getAnswer() == null || reply.getAnswer().trim().isEmpty()) {
-            throw new IllegalStateException("Empty tutor answer");
-        }
         return reply;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<RagCitation> parseCitations(Object citationsRaw) {
-        List<RagCitation> citations = new ArrayList<>();
-        if (!(citationsRaw instanceof List)) {
-            return citations;
-        }
-        for (Object item : (List<?>) citationsRaw) {
-            if (!(item instanceof Map)) {
-                continue;
+    private List<RagCitation> parseCitations(JSONArray citationsRaw, List<RetrievedChunk> passages) {
+        Set<String> allowed = new HashSet<>();
+        for (RetrievedChunk passage : passages) {
+            if (passage.getChunk() != null && passage.getChunk().getNoteId() != null) {
+                allowed.add(passage.getChunk().getNoteId());
             }
-            Map<String, Object> map = (Map<String, Object>) item;
+        }
+        List<RagCitation> citations = new ArrayList<>();
+        if (citationsRaw != null) {
+            for (int i = 0; i < citationsRaw.length(); i++) {
+                JSONObject item = citationsRaw.optJSONObject(i);
+                if (item == null) {
+                    continue;
+                }
+                String noteId = item.optString("noteId", "").trim();
+                if (noteId.isEmpty() || !allowed.contains(noteId)) {
+                    continue;
+                }
+                citations.add(new RagCitation(
+                        noteId,
+                        item.optString("title", ""),
+                        item.optString("excerpt", "")
+                ));
+                if (citations.size() >= 5) {
+                    break;
+                }
+            }
+        }
+        if (citations.isEmpty() && !passages.isEmpty() && passages.get(0).getChunk() != null) {
             citations.add(new RagCitation(
-                    asString(map.get("noteId")),
-                    asString(map.get("title")),
-                    asString(map.get("excerpt"))
+                    passages.get(0).getChunk().getNoteId(),
+                    passages.get(0).getChunk().getTitle(),
+                    GeminiApiClient.truncate(passages.get(0).getChunk().getText(), 180)
             ));
         }
         return citations;
-    }
-
-    private String asString(Object value) {
-        return value == null ? null : String.valueOf(value).trim();
-    }
-
-    private String asStringOrDefault(Object value, String fallback) {
-        String text = asString(value);
-        return text == null || text.isEmpty() ? fallback : text;
-    }
-
-    private long asLong(Object value, long fallback) {
-        if (value instanceof Number) {
-            return ((Number) value).longValue();
-        }
-        return fallback;
     }
 }

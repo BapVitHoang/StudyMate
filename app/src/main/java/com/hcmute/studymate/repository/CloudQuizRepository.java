@@ -1,94 +1,106 @@
 package com.hcmute.studymate.repository;
 
-import com.google.firebase.functions.FirebaseFunctions;
-import com.google.firebase.functions.HttpsCallableResult;
+import com.hcmute.studymate.ai.GeminiApiClient;
+import com.hcmute.studymate.ai.GeminiPromptBuilder;
 import com.hcmute.studymate.model.QuizQuestion;
 import com.hcmute.studymate.model.RetrievedChunk;
-import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DataCallback;
-import com.hcmute.studymate.utils.PassagePayloadMapper;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class CloudQuizRepository {
-    private static final String FUNCTIONS_REGION = "asia-southeast1";
-    private final FirebaseFunctions functions;
+    private final GeminiApiClient geminiApiClient;
 
     public CloudQuizRepository() {
-        this(FirebaseFunctions.getInstance(FUNCTIONS_REGION));
+        this(GeminiApiClient.getInstance());
     }
 
-    CloudQuizRepository(FirebaseFunctions functions) {
-        this.functions = functions;
+    CloudQuizRepository(GeminiApiClient geminiApiClient) {
+        this.geminiApiClient = geminiApiClient;
     }
 
     public void generate(List<RetrievedChunk> passages, int questionCount, List<String> types,
                          String locale, DataCallback<List<QuizQuestion>> callback) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("passages", PassagePayloadMapper.toPayload(passages));
-        payload.put("questionCount", questionCount);
-        payload.put("types", types);
-        payload.put("locale", locale == null ? "en" : locale);
+        if (passages == null || passages.isEmpty()) {
+            callback.onError(new IllegalArgumentException("At least one passage is required"));
+            return;
+        }
+        String typesCsv = types == null || types.isEmpty() ? "mcq, short" : String.join(", ", types);
+        String safeLocale = locale == null ? "en" : locale;
+        int count = questionCount <= 0 ? 5 : Math.min(questionCount, 10);
+        String prompt = GeminiPromptBuilder.quiz(safeLocale, count, typesCsv, passages);
+        geminiApiClient.generateJsonAsync(prompt, 0.35, new GeminiApiClient.JsonCallback() {
+            @Override
+            public void onSuccess(JSONObject json) {
+                try {
+                    callback.onSuccess(parse(json, passages));
+                } catch (Exception exception) {
+                    callback.onError(exception);
+                }
+            }
 
-        functions.getHttpsCallable(Constants.CALLABLE_GENERATE_QUIZ)
-                .call(payload)
-                .addOnSuccessListener(result -> {
-                    try {
-                        callback.onSuccess(parse(result));
-                    } catch (Exception exception) {
-                        callback.onError(exception);
-                    }
-                })
-                .addOnFailureListener(callback::onError);
+            @Override
+            public void onError(Exception exception) {
+                callback.onError(exception);
+            }
+        });
     }
 
-    @SuppressWarnings("unchecked")
-    private List<QuizQuestion> parse(HttpsCallableResult callableResult) {
-        Object raw = callableResult.getData();
-        if (!(raw instanceof Map)) {
-            throw new IllegalStateException("Unexpected quiz response");
+    private List<QuizQuestion> parse(JSONObject data, List<RetrievedChunk> passages) throws Exception {
+        Set<String> allowed = new HashSet<>();
+        for (RetrievedChunk passage : passages) {
+            if (passage.getChunk() != null && passage.getChunk().getNoteId() != null) {
+                allowed.add(passage.getChunk().getNoteId());
+            }
         }
-        Map<String, Object> data = (Map<String, Object>) raw;
+
         List<QuizQuestion> questions = new ArrayList<>();
-        Object questionsRaw = data.get("questions");
-        if (questionsRaw instanceof List) {
-            for (Object item : (List<?>) questionsRaw) {
-                if (!(item instanceof Map)) {
+        JSONArray questionsRaw = data.optJSONArray("questions");
+        if (questionsRaw != null) {
+            for (int i = 0; i < questionsRaw.length() && questions.size() < 10; i++) {
+                JSONObject item = questionsRaw.optJSONObject(i);
+                if (item == null) {
                     continue;
                 }
-                Map<String, Object> map = (Map<String, Object>) item;
+                String stem = item.optString("stem", "").trim();
+                String answer = item.optString("answer", "").trim();
+                String sourceNoteId = item.optString("sourceNoteId", "").trim();
+                if (stem.isEmpty() || answer.isEmpty() || !allowed.contains(sourceNoteId)) {
+                    continue;
+                }
                 QuizQuestion question = new QuizQuestion();
                 question.setId(UUID.randomUUID().toString());
-                question.setType(asString(map.get("type")));
-                question.setStem(asString(map.get("stem")));
-                question.setAnswer(asString(map.get("answer")));
-                question.setExplanation(asString(map.get("explanation")));
-                question.setSourceNoteId(asString(map.get("sourceNoteId")));
-                question.setSourceChunkId(asString(map.get("sourceChunkId")));
+                String type = item.optString("type", "short").trim().toLowerCase();
+                question.setType(QuizQuestion.TYPE_MCQ.equals(type) ? QuizQuestion.TYPE_MCQ : QuizQuestion.TYPE_SHORT);
+                question.setStem(stem);
+                question.setAnswer(answer);
+                question.setExplanation(item.optString("explanation", ""));
+                question.setSourceNoteId(sourceNoteId);
+                question.setSourceChunkId(item.optString("sourceChunkId", ""));
                 List<String> choices = new ArrayList<>();
-                Object choicesRaw = map.get("choices");
-                if (choicesRaw instanceof List) {
-                    for (Object choice : (List<?>) choicesRaw) {
-                        if (choice != null) {
-                            choices.add(String.valueOf(choice));
+                JSONArray choicesRaw = item.optJSONArray("choices");
+                if (choicesRaw != null) {
+                    for (int c = 0; c < choicesRaw.length() && choices.size() < 4; c++) {
+                        String choice = choicesRaw.optString(c, "").trim();
+                        if (!choice.isEmpty()) {
+                            choices.add(choice);
                         }
                     }
                 }
-                question.setChoices(choices);
+                question.setChoices(QuizQuestion.TYPE_MCQ.equals(question.getType()) ? choices : new ArrayList<>());
                 questions.add(question);
             }
         }
         if (questions.isEmpty()) {
-            throw new IllegalStateException("No quiz questions returned");
+            throw new IllegalStateException("No valid grounded quiz questions returned");
         }
         return questions;
-    }
-
-    private String asString(Object value) {
-        return value == null ? null : String.valueOf(value).trim();
     }
 }

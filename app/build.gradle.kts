@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
@@ -19,6 +21,23 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Direct Gemini calls (no Firebase Blaze). Set in local.properties:
+        // GEMINI_API_KEY=your_key_here
+        val localProperties = Properties()
+        val localFile = rootProject.file("local.properties")
+        if (localFile.exists()) {
+            localFile.inputStream().use { localProperties.load(it) }
+        }
+        val geminiKey = (localProperties.getProperty("GEMINI_API_KEY") ?: "")
+            .trim()
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
