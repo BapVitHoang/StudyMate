@@ -20,6 +20,11 @@ public class Note {
     private String recordingPath;
     private long recordingDurationMillis;
     private List<VoiceRecording> recordings = new ArrayList<>();
+    private List<String> summaryBullets = new ArrayList<>();
+    private List<String> summaryKeyTerms = new ArrayList<>();
+    private Double summaryConfidence;
+    private String summarySource;
+    private Long summaryGeneratedAt;
 
     public Note() {
     }
@@ -158,5 +163,45 @@ public class Note {
 
     public void setRecordings(List<VoiceRecording> recordings) {
         this.recordings = recordings == null ? new ArrayList<>() : recordings;
+    }
+
+    public List<String> getSummaryBullets() {
+        return summaryBullets;
+    }
+
+    public void setSummaryBullets(List<String> summaryBullets) {
+        this.summaryBullets = summaryBullets == null ? new ArrayList<>() : summaryBullets;
+    }
+
+    public List<String> getSummaryKeyTerms() {
+        return summaryKeyTerms;
+    }
+
+    public void setSummaryKeyTerms(List<String> summaryKeyTerms) {
+        this.summaryKeyTerms = summaryKeyTerms == null ? new ArrayList<>() : summaryKeyTerms;
+    }
+
+    public Double getSummaryConfidence() {
+        return summaryConfidence;
+    }
+
+    public void setSummaryConfidence(Double summaryConfidence) {
+        this.summaryConfidence = summaryConfidence;
+    }
+
+    public String getSummarySource() {
+        return summarySource;
+    }
+
+    public void setSummarySource(String summarySource) {
+        this.summarySource = summarySource;
+    }
+
+    public Long getSummaryGeneratedAt() {
+        return summaryGeneratedAt;
+    }
+
+    public void setSummaryGeneratedAt(Long summaryGeneratedAt) {
+        this.summaryGeneratedAt = summaryGeneratedAt;
     }
 }

@@ -15,9 +15,25 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:name=".StudyMateApp"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyMate">
+        <activity
+            android:name=".view.KnowledgeGraphActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.ReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.QuizActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.ExamPrepActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.TutorActivity"
+            android:exported="false" />
         <activity
             android:name=".view.NoteDetailActivity"
             android:exported="false" />

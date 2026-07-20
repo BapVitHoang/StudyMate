@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:orientation="vertical"
+    android:padding="@dimen/screen_padding">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/quiz_title"
+        android:textAppearance="?attr/textAppearanceHeadlineMedium"
+        android:textColor="@color/studymate_text_primary"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/quizTopicInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:hint="@string/quiz_topic_hint" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/generateQuizButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:text="@string/quiz_generate" />
+
+    <ProgressBar
+        android:id="@+id/quizProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/space_md"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/quizStemText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_lg"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:textColor="@color/studymate_text_primary" />
+
+    <RadioGroup
+        android:id="@+id/quizChoicesGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_sm" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/quizShortAnswerInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/quiz_short_answer_hint"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/quizFeedbackText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_sm"
+        android:textColor="@color/studymate_text_secondary" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/quizCheckButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/quiz_check" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/quizNextButton"
+            style="@style/StudyMateButtonText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/quiz_next" />
+    </LinearLayout>
+</LinearLayout>

@@ -31,6 +31,23 @@
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/askNotesButton"
+                style="@style/StudyMateButtonText"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/ask_notes"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="48dp"
+                android:text=""
+                app:icon="@drawable/ic_ask_24"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@color/studymate_secondary" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/statsButton"
                 style="@style/StudyMateButtonText"
                 android:layout_width="48dp"
@@ -97,6 +114,61 @@
                 android:inputType="text" />
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_md"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/openTutorButton"
+                    style="@style/StudyMateButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tutor_title" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/openExamPrepButton"
+                    style="@style/StudyMateButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/exam_prep_short" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/openQuizButton"
+                    style="@style/StudyMateButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/quiz_short" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/openReviewButton"
+                    style="@style/StudyMateButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/review_short" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/openKnowledgeGraphButton"
+                    style="@style/StudyMateButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/knowledge_short" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/reindexButton"
+                    style="@style/StudyMateButtonText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reindex_notes" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <HorizontalScrollView
             android:layout_width="match_parent"

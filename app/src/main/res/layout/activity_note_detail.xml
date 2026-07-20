@@ -136,6 +136,22 @@
                     app:iconTint="@color/studymate_secondary" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/quizFromNoteButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:text="@string/quiz_short" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/extractConceptsButton"
+                    style="@style/StudyMateButtonOutlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_sm"
+                    android:text="@string/extract_concepts" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/reminderNoteButton"
                     style="@style/StudyMateButtonOutlined"
                     android:layout_width="wrap_content"
@@ -349,6 +365,15 @@
             android:visibility="gone" />
 
         <TextView
+            android:id="@+id/detailSummaryMetaText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textColor="@color/studymate_text_secondary"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/detailSummaryText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -358,6 +383,29 @@
             android:padding="@dimen/space_lg"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="@color/studymate_text_primary"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/detailSummaryKeyTermsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_sm"
+            android:background="@drawable/bg_chip_primary"
+            android:paddingStart="@dimen/space_md"
+            android:paddingTop="@dimen/space_sm"
+            android:paddingEnd="@dimen/space_md"
+            android:paddingBottom="@dimen/space_sm"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="@color/studymate_chip_text"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/summaryLoadingProgress"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/space_md"
             android:visibility="gone" />
 
     </LinearLayout>

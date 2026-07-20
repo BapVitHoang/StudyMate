@@ -2,13 +2,19 @@ package com.hcmute.studymate.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,24 +29,33 @@ import com.hcmute.studymate.adapter.NoteAdapter;
 import com.hcmute.studymate.controller.AuthController;
 import com.hcmute.studymate.controller.CategoryController;
 import com.hcmute.studymate.controller.NoteController;
+import com.hcmute.studymate.controller.RagController;
 import com.hcmute.studymate.controller.SearchController;
+import com.hcmute.studymate.ml.ModelManager;
 import com.hcmute.studymate.model.Category;
 import com.hcmute.studymate.model.Note;
+import com.hcmute.studymate.model.RagAnswer;
+import com.hcmute.studymate.model.RagCitation;
+import com.hcmute.studymate.service.HybridSearchService;
 import com.hcmute.studymate.utils.AppContainer;
 import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DailyReviewScheduler;
+import com.hcmute.studymate.utils.DataCallback;
 import com.hcmute.studymate.utils.ListCallback;
 import com.hcmute.studymate.utils.NoteTemplateUtils;
 import com.hcmute.studymate.utils.OperationCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class NoteListActivity extends AppCompatActivity implements NoteAdapter.OnNoteClickListener {
     private AuthController authController;
     private NoteController noteController;
     private CategoryController categoryController;
     private SearchController searchController;
+    private RagController ragController;
+    private ModelManager modelManager;
     private NoteAdapter noteAdapter;
     private TextInputEditText searchInput;
     private ChipGroup categoryChipGroup;
@@ -49,9 +64,12 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
 
     private final List<Note> allNotes = new ArrayList<>();
     private final List<String> categoryNames = new ArrayList<>();
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSearch;
     private String selectedCategory = Constants.CATEGORY_ALL;
     private String userId;
     private boolean loadingNotes;
+    private int searchGeneration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +83,8 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         noteController = AppContainer.noteController();
         categoryController = AppContainer.categoryController();
         searchController = AppContainer.searchController();
+        ragController = AppContainer.ragController();
+        modelManager = AppContainer.modelManager();
 
         searchInput = findViewById(R.id.searchInput);
         categoryChipGroup = findViewById(R.id.categoryChipGroup);
@@ -72,6 +92,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         notesLoadingProgress = findViewById(R.id.notesLoadingProgress);
         MaterialButton logoutButton = findViewById(R.id.logoutButton);
         MaterialButton statsButton = findViewById(R.id.statsButton);
+        MaterialButton askNotesButton = findViewById(R.id.askNotesButton);
         FloatingActionButton addNoteFab = findViewById(R.id.addNoteFab);
         RecyclerView notesRecyclerView = findViewById(R.id.notesRecyclerView);
 
@@ -82,6 +103,22 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         addNoteFab.setOnClickListener(view -> showNewNoteOptions());
         statsButton.setOnClickListener(view -> startActivity(new Intent(this, StudyStatsActivity.class)));
         logoutButton.setOnClickListener(view -> logout());
+        askNotesButton.setOnClickListener(view -> showAskDialog());
+        askNotesButton.setOnLongClickListener(view -> {
+            prepareModels();
+            return true;
+        });
+        findViewById(R.id.openTutorButton).setOnClickListener(view ->
+                startActivity(TutorActivity.newIntent(this)));
+        findViewById(R.id.openExamPrepButton).setOnClickListener(view ->
+                startActivity(ExamPrepActivity.newIntent(this)));
+        findViewById(R.id.openQuizButton).setOnClickListener(view ->
+                startActivity(QuizActivity.newIntent(this)));
+        findViewById(R.id.openReviewButton).setOnClickListener(view ->
+                startActivity(ReviewActivity.newIntent(this)));
+        findViewById(R.id.openKnowledgeGraphButton).setOnClickListener(view ->
+                startActivity(KnowledgeGraphActivity.newIntent(this)));
+        findViewById(R.id.reindexButton).setOnClickListener(view -> reindexAllNotes());
         searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -89,7 +126,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                applyFilters();
+                scheduleHybridSearch();
             }
 
             @Override
@@ -109,6 +146,14 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         }
         loadCategories();
         loadNotes();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (pendingSearch != null) {
+            searchHandler.removeCallbacks(pendingSearch);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -142,6 +187,15 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
                 .show();
     }
 
+    private void scheduleHybridSearch() {
+        if (pendingSearch != null) {
+            searchHandler.removeCallbacks(pendingSearch);
+        }
+        final int generation = ++searchGeneration;
+        pendingSearch = () -> applyFilters(generation);
+        searchHandler.postDelayed(pendingSearch, Constants.SEARCH_DEBOUNCE_MS);
+    }
+
     private void loadCategories() {
         if (userId == null) {
             return;
@@ -161,7 +215,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
                     selectedCategory = Constants.CATEGORY_ALL;
                 }
                 renderCategoryChips(false);
-                applyFilters();
+                scheduleHybridSearch();
             }
 
             @Override
@@ -183,7 +237,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
                 setNotesLoading(false);
                 allNotes.clear();
                 allNotes.addAll(items);
-                applyFilters();
+                scheduleHybridSearch();
             }
 
             @Override
@@ -194,17 +248,159 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
         });
     }
 
-    private void applyFilters() {
+    private void applyFilters(int generation) {
         String keyword = searchInput.getText() == null ? "" : searchInput.getText().toString();
-        List<Note> visibleNotes = searchController.filterNotes(allNotes, keyword, selectedCategory);
-        noteAdapter.submitList(visibleNotes);
-        if (loadingNotes) {
-            emptyStateText.setVisibility(View.GONE);
+        searchController.searchHybrid(userId, new ArrayList<>(allNotes), keyword, selectedCategory,
+                new HybridSearchService.HybridCallback() {
+                    @Override
+                    public void onSuccess(List<Note> notes, boolean usedSemantic) {
+                        if (generation != searchGeneration) {
+                            return;
+                        }
+                        runOnUiThread(() -> {
+                            noteAdapter.submitList(notes);
+                            if (loadingNotes) {
+                                emptyStateText.setVisibility(View.GONE);
+                                return;
+                            }
+                            emptyStateText.setText(buildEmptyStateText(keyword, notes));
+                            emptyStateText.setVisibility(notes.isEmpty() ? View.VISIBLE : View.GONE);
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        if (generation != searchGeneration) {
+                            return;
+                        }
+                        runOnUiThread(() -> {
+                            List<Note> fallback = searchController.filterNotes(
+                                    allNotes, keyword, selectedCategory);
+                            noteAdapter.submitList(fallback);
+                            emptyStateText.setText(buildEmptyStateText(keyword, fallback));
+                            emptyStateText.setVisibility(fallback.isEmpty() ? View.VISIBLE : View.GONE);
+                        });
+                    }
+                });
+    }
+
+    private void showAskDialog() {
+        if (!modelManager.isReady()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.ask_notes_title)
+                    .setMessage(R.string.rag_models_missing)
+                    .setPositiveButton(R.string.download_rag_models, (dialog, which) -> prepareModels())
+                    .setNegativeButton(R.string.cancel, null)
+                    .show();
             return;
         }
 
-        emptyStateText.setText(buildEmptyStateText(keyword, visibleNotes));
-        emptyStateText.setVisibility(visibleNotes.isEmpty() ? View.VISIBLE : View.GONE);
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        input.setHint(R.string.ask_notes_hint);
+        int padding = getResources().getDimensionPixelSize(R.dimen.space_lg);
+        input.setPadding(padding, padding, padding, padding);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.ask_notes_title)
+                .setView(input)
+                .setPositiveButton(R.string.ask_notes_submit, (dialog, which) -> {
+                    String question = input.getText() == null ? "" : input.getText().toString().trim();
+                    if (question.isEmpty()) {
+                        Toast.makeText(this, R.string.ask_notes_hint, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    askQuestion(question);
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void askQuestion(String question) {
+        Toast.makeText(this, R.string.asking_notes, Toast.LENGTH_SHORT).show();
+        ragController.ask(userId, question, Locale.getDefault().toLanguageTag(),
+                new DataCallback<RagAnswer>() {
+                    @Override
+                    public void onSuccess(RagAnswer data) {
+                        runOnUiThread(() -> showAskResult(data));
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        runOnUiThread(() -> showError("Could not answer from notes", exception));
+                    }
+                });
+    }
+
+    private void showAskResult(RagAnswer answer) {
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        int padding = getResources().getDimensionPixelSize(R.dimen.space_lg);
+        container.setPadding(padding, padding, padding, padding);
+
+        TextView answerText = new TextView(this);
+        answerText.setText(answer.getAnswer());
+        answerText.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge);
+        container.addView(answerText);
+
+        if (answer.getCitations() != null && !answer.getCitations().isEmpty()) {
+            TextView sourcesLabel = new TextView(this);
+            sourcesLabel.setText(R.string.rag_citations);
+            sourcesLabel.setPadding(0, padding, 0, padding / 2);
+            sourcesLabel.setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleSmall);
+            container.addView(sourcesLabel);
+
+            for (RagCitation citation : answer.getCitations()) {
+                MaterialButton button = new MaterialButton(this, null,
+                        com.google.android.material.R.attr.materialButtonOutlinedStyle);
+                String title = citation.getTitle() == null || citation.getTitle().isEmpty()
+                        ? citation.getNoteId()
+                        : citation.getTitle();
+                String excerpt = citation.getExcerpt() == null ? "" : citation.getExcerpt();
+                button.setText(title + (excerpt.isEmpty() ? "" : "\n" + excerpt));
+                button.setOnClickListener(view -> {
+                    if (citation.getNoteId() != null) {
+                        startActivity(NoteDetailActivity.newIntent(this, citation.getNoteId()));
+                    }
+                });
+                container.addView(button);
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.ask_notes_title)
+                .setView(container)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    private void prepareModels() {
+        Toast.makeText(this, R.string.download_rag_models, Toast.LENGTH_SHORT).show();
+        modelManager.ensureReadyAsync((ready, error) -> runOnUiThread(() -> {
+            if (ready) {
+                Toast.makeText(this, R.string.rag_models_ready, Toast.LENGTH_SHORT).show();
+            } else {
+                showError("Could not prepare RAG models", error);
+            }
+        }));
+    }
+
+    private void reindexAllNotes() {
+        Toast.makeText(this, R.string.reindex_started, Toast.LENGTH_SHORT).show();
+        AppContainer.indexingController().reindexAllAsync(userId, new ArrayList<>(allNotes),
+                new OperationCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() ->
+                                Toast.makeText(NoteListActivity.this, R.string.reindex_done,
+                                        Toast.LENGTH_SHORT).show());
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        runOnUiThread(() -> showError("Reindex failed", exception));
+                    }
+                });
     }
 
     private void renderCategoryChips(boolean loading) {
@@ -222,7 +418,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAdapter.O
             chip.setOnClickListener(view -> {
                 selectedCategory = categoryName;
                 renderCategoryChips(false);
-                applyFilters();
+                scheduleHybridSearch();
             });
             categoryChipGroup.addView(chip);
         }

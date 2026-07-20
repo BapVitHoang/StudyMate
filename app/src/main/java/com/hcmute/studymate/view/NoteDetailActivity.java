@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,12 +30,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.hcmute.studymate.R;
 import com.hcmute.studymate.controller.AuthController;
+import com.hcmute.studymate.controller.KnowledgeGraphController;
 import com.hcmute.studymate.controller.NoteController;
 import com.hcmute.studymate.controller.ReminderController;
 import com.hcmute.studymate.controller.SummaryController;
 import com.hcmute.studymate.controller.StudySessionController;
 import com.hcmute.studymate.model.ChecklistItem;
 import com.hcmute.studymate.model.Note;
+import com.hcmute.studymate.model.SummarizeRequest;
 import com.hcmute.studymate.model.SummaryResult;
 import com.hcmute.studymate.model.VoiceRecording;
 import com.hcmute.studymate.service.FocusTimerService;
@@ -45,6 +48,7 @@ import com.hcmute.studymate.utils.DataCallback;
 import com.hcmute.studymate.utils.DateTimeUtils;
 import com.hcmute.studymate.utils.OperationCallback;
 import com.hcmute.studymate.utils.SummaryCallback;
+import com.hcmute.studymate.utils.SummaryFormatter;
 import com.hcmute.studymate.utils.TagUtils;
 
 import java.util.Calendar;
@@ -71,7 +75,9 @@ public class NoteDetailActivity extends AppCompatActivity {
     private TextView checklistTitleText;
     private LinearLayout checklistContainer;
     private TextView summaryTitleText;
+    private TextView summaryMetaText;
     private TextView summaryText;
+    private TextView summaryKeyTermsText;
     private TextView reminderText;
     private TextView focusTimeText;
     private TextView recordingStatusText;
@@ -82,6 +88,8 @@ public class NoteDetailActivity extends AppCompatActivity {
     private MaterialButton stopFocusButton;
     private MaterialButton startRecordingButton;
     private MaterialButton stopRecordingButton;
+    private ProgressBar summaryLoadingProgress;
+    private MaterialButton summarizeButton;
     private Note currentNote;
     private String userId;
     private FocusTimerService focusTimerService;
@@ -90,7 +98,7 @@ public class NoteDetailActivity extends AppCompatActivity {
     private boolean voiceBound;
     private MediaPlayer mediaPlayer;
     private String playingRecordingPath;
-
+    private boolean summarizing;
     public static Intent newIntent(Context context, String noteId) {
         Intent intent = new Intent(context, NoteDetailActivity.class);
         intent.putExtra(EXTRA_NOTE_ID, noteId);
@@ -120,14 +128,17 @@ public class NoteDetailActivity extends AppCompatActivity {
         checklistTitleText = findViewById(R.id.detailChecklistTitleText);
         checklistContainer = findViewById(R.id.detailChecklistContainer);
         summaryTitleText = findViewById(R.id.detailSummaryTitleText);
+        summaryMetaText = findViewById(R.id.detailSummaryMetaText);
         summaryText = findViewById(R.id.detailSummaryText);
+        summaryKeyTermsText = findViewById(R.id.detailSummaryKeyTermsText);
+        summaryLoadingProgress = findViewById(R.id.summaryLoadingProgress);
         reminderText = findViewById(R.id.detailReminderText);
         focusTimeText = findViewById(R.id.focusTimeText);
         recordingStatusText = findViewById(R.id.recordingStatusText);
         recordingsContainer = findViewById(R.id.recordingsContainer);
         MaterialButton editButton = findViewById(R.id.editNoteButton);
         MaterialButton deleteButton = findViewById(R.id.deleteNoteButton);
-        MaterialButton summarizeButton = findViewById(R.id.summarizeNoteButton);
+        summarizeButton = findViewById(R.id.summarizeNoteButton);
         MaterialButton reminderButton = findViewById(R.id.reminderNoteButton);
         pinButton = findViewById(R.id.pinNoteButton);
         startFocusButton = findViewById(R.id.startFocusButton);
@@ -135,6 +146,8 @@ public class NoteDetailActivity extends AppCompatActivity {
         stopFocusButton = findViewById(R.id.stopFocusButton);
         startRecordingButton = findViewById(R.id.startRecordingButton);
         stopRecordingButton = findViewById(R.id.stopRecordingButton);
+        MaterialButton quizFromNoteButton = findViewById(R.id.quizFromNoteButton);
+        MaterialButton extractConceptsButton = findViewById(R.id.extractConceptsButton);
 
         editButton.setOnClickListener(view -> {
             if (currentNote != null) {
@@ -150,6 +163,12 @@ public class NoteDetailActivity extends AppCompatActivity {
         stopFocusButton.setOnClickListener(view -> stopFocusSession());
         startRecordingButton.setOnClickListener(view -> startVoiceRecording());
         stopRecordingButton.setOnClickListener(view -> stopVoiceRecording());
+        quizFromNoteButton.setOnClickListener(view -> {
+            if (currentNote != null) {
+                startActivity(QuizActivity.newIntentForNote(this, currentNote.getId()));
+            }
+        });
+        extractConceptsButton.setOnClickListener(view -> extractConceptsFromNote());
         requestNotificationPermissionIfNeeded();
         renderFocusState(DEFAULT_FOCUS_DURATION, false, false);
     }
@@ -226,13 +245,24 @@ public class NoteDetailActivity extends AppCompatActivity {
         tagsText.setVisibility(tags.isEmpty() ? View.GONE : View.VISIBLE);
         tagsText.setText(tags.isEmpty() ? "" : "#" + tags.replace(", ", " #"));
 
-        boolean hasSummary = currentNote.getSummary() != null && !currentNote.getSummary().trim().isEmpty();
+        boolean hasSummary = SummaryFormatter.hasStructuredSummary(currentNote);
         summaryTitleText.setVisibility(hasSummary ? View.VISIBLE : View.GONE);
         summaryText.setVisibility(hasSummary ? View.VISIBLE : View.GONE);
-        summaryText.setText(hasSummary ? currentNote.getSummary() : "");
+        summaryText.setText(hasSummary ? SummaryFormatter.formatDisplayBody(currentNote) : "");
+
+        String meta = SummaryFormatter.formatMetaLine(currentNote);
+        summaryMetaText.setVisibility(hasSummary && !meta.isEmpty() ? View.VISIBLE : View.GONE);
+        summaryMetaText.setText(meta);
+
+        String keyTerms = SummaryFormatter.formatKeyTerms(currentNote);
+        summaryKeyTermsText.setVisibility(hasSummary && !keyTerms.isEmpty() ? View.VISIBLE : View.GONE);
+        summaryKeyTermsText.setText(keyTerms.isEmpty()
+                ? ""
+                : getString(R.string.key_terms_label, keyTerms));
         pinButton.setText(currentNote.isPinned() ? R.string.unpin_note : R.string.pin_note);
         renderChecklist();
         renderRecordingState();
+        renderSummarizeState();
 
         if (currentNote.getReminderAt() == null) {
             reminderText.setText("Reminder not set");
@@ -312,22 +342,37 @@ public class NoteDetailActivity extends AppCompatActivity {
     }
 
     private void summarizeCurrentNote() {
-        if (currentNote == null) {
+        if (currentNote == null || summarizing) {
             return;
         }
-        summaryController.summarize(currentNote.getContent(), new SummaryCallback() {
+
+        SummarizeRequest request = new SummarizeRequest(
+                currentNote.getId(),
+                currentNote.getTitle(),
+                currentNote.getContent(),
+                currentNote.getCategory(),
+                Locale.getDefault().toLanguageTag()
+        );
+
+        setSummarizing(true);
+        summaryController.summarize(request, new SummaryCallback() {
             @Override
             public void onSuccess(SummaryResult result) {
-                currentNote.setSummary(result.getSummaryText());
+                SummaryFormatter.applyToNote(currentNote, result);
                 noteController.saveNote(userId, currentNote, new OperationCallback() {
                     @Override
                     public void onSuccess() {
+                        setSummarizing(false);
                         renderNote();
-                        Toast.makeText(NoteDetailActivity.this, "Summary generated", Toast.LENGTH_SHORT).show();
+                        int messageRes = result.isUsedFallback()
+                                ? R.string.summary_generated_fallback
+                                : R.string.summary_generated_cloud;
+                        Toast.makeText(NoteDetailActivity.this, messageRes, Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onError(Exception exception) {
+                        setSummarizing(false);
                         showError("Could not save summary", exception);
                     }
                 });
@@ -335,9 +380,46 @@ public class NoteDetailActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception exception) {
+                setSummarizing(false);
                 showError("Could not generate summary", exception);
             }
         });
+    }
+
+    private void extractConceptsFromNote() {
+        if (currentNote == null) {
+            return;
+        }
+        Toast.makeText(this, R.string.extract_concepts, Toast.LENGTH_SHORT).show();
+        KnowledgeGraphController knowledgeGraphController = AppContainer.knowledgeGraphController();
+        knowledgeGraphController.extractFromNote(
+                userId, currentNote, Locale.getDefault().toLanguageTag(),
+                new OperationCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> Toast.makeText(NoteDetailActivity.this,
+                                R.string.concepts_extracted, Toast.LENGTH_SHORT).show());
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        runOnUiThread(() -> showError("Could not extract concepts", exception));
+                    }
+                });
+    }
+
+    private void setSummarizing(boolean value) {
+        summarizing = value;
+        renderSummarizeState();
+    }
+
+    private void renderSummarizeState() {
+        if (summarizeButton == null || summaryLoadingProgress == null) {
+            return;
+        }
+        summarizeButton.setEnabled(!summarizing);
+        summarizeButton.setText(summarizing ? R.string.summarizing : R.string.summarize);
+        summaryLoadingProgress.setVisibility(summarizing ? View.VISIBLE : View.GONE);
     }
 
     private void showReminderPicker() {
@@ -909,7 +991,7 @@ public class NoteDetailActivity extends AppCompatActivity {
 
     private void showError(String prefix, Exception exception) {
         String detail = exception == null || exception.getMessage() == null
-                ? "Please check your connection and Firestore rules."
+                ? "Please check your connection and Firebase setup."
                 : exception.getMessage();
         Toast.makeText(this, prefix + ". " + detail, Toast.LENGTH_LONG).show();
     }

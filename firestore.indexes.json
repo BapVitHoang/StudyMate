@@ -1,0 +1,32 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "noteChunks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "embedding",
+          "vectorConfig": {
+            "dimension": 384,
+            "flat": {}
+          }
+        }
+      ]
+    },
+    {
+      "collectionGroup": "noteChunks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "noteId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "chunkIndex",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/studymate_background"
+    android:orientation="vertical"
+    android:padding="@dimen/screen_padding">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/review_title"
+        android:textAppearance="?attr/textAppearanceHeadlineMedium"
+        android:textColor="@color/studymate_text_primary"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/reviewEmptyText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_lg"
+        android:text="@string/review_empty"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/reviewStemText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_lg"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:textColor="@color/studymate_text_primary" />
+
+    <TextView
+        android:id="@+id/reviewAnswerText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:textColor="@color/studymate_text_secondary"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/reviewRevealButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:text="@string/review_reveal" />
+
+    <LinearLayout
+        android:id="@+id/reviewQualityRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_md"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reviewAgainButton"
+            style="@style/StudyMateButtonText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/review_again" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reviewHardButton"
+            style="@style/StudyMateButtonText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/review_hard" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reviewGoodButton"
+            style="@style/StudyMateButtonText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/review_good" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reviewEasyButton"
+            style="@style/StudyMateButtonText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/review_easy" />
+    </LinearLayout>
+</LinearLayout>

@@ -8,9 +8,11 @@ import com.hcmute.studymate.utils.OperationCallback;
 
 public class NoteService {
     private final NoteRepository noteRepository;
+    private final IndexingService indexingService;
 
-    public NoteService(NoteRepository noteRepository) {
+    public NoteService(NoteRepository noteRepository, IndexingService indexingService) {
         this.noteRepository = noteRepository;
+        this.indexingService = indexingService;
     }
 
     public void loadNotes(String userId, ListCallback<Note> callback) {
@@ -44,7 +46,20 @@ public class NoteService {
             note.setCreatedAt(now);
         }
         note.setUpdatedAt(now);
-        noteRepository.saveNote(userId, note, callback);
+        noteRepository.saveNote(userId, note, new OperationCallback() {
+            @Override
+            public void onSuccess() {
+                if (indexingService != null) {
+                    indexingService.indexNoteAsync(userId, note);
+                }
+                callback.onSuccess();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                callback.onError(exception);
+            }
+        });
     }
 
     public void deleteNote(String userId, String noteId, OperationCallback callback) {
@@ -52,7 +67,20 @@ public class NoteService {
             callback.onError(new IllegalArgumentException("Note id is required"));
             return;
         }
-        noteRepository.deleteNote(userId, noteId, callback);
+        noteRepository.deleteNote(userId, noteId, new OperationCallback() {
+            @Override
+            public void onSuccess() {
+                if (indexingService != null) {
+                    indexingService.deleteNoteChunksAsync(userId, noteId);
+                }
+                callback.onSuccess();
+            }
+
+            @Override
+            public void onError(Exception exception) {
+                callback.onError(exception);
+            }
+        });
     }
 
     public void setPinned(String userId, Note note, boolean pinned, OperationCallback callback) {

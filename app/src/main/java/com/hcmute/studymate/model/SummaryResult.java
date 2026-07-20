@@ -1,10 +1,17 @@
 package com.hcmute.studymate.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SummaryResult {
     private String originalText;
     private String summaryText;
+    private List<String> bullets = new ArrayList<>();
+    private List<String> keyTerms = new ArrayList<>();
+    private Double confidence;
     private String source;
     private long generatedAt;
+    private boolean usedFallback;
 
     public SummaryResult() {
     }
@@ -32,6 +39,30 @@ public class SummaryResult {
         this.summaryText = summaryText;
     }
 
+    public List<String> getBullets() {
+        return bullets;
+    }
+
+    public void setBullets(List<String> bullets) {
+        this.bullets = bullets == null ? new ArrayList<>() : bullets;
+    }
+
+    public List<String> getKeyTerms() {
+        return keyTerms;
+    }
+
+    public void setKeyTerms(List<String> keyTerms) {
+        this.keyTerms = keyTerms == null ? new ArrayList<>() : keyTerms;
+    }
+
+    public Double getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(Double confidence) {
+        this.confidence = confidence;
+    }
+
     public String getSource() {
         return source;
     }
@@ -46,5 +77,13 @@ public class SummaryResult {
 
     public void setGeneratedAt(long generatedAt) {
         this.generatedAt = generatedAt;
+    }
+
+    public boolean isUsedFallback() {
+        return usedFallback;
+    }
+
+    public void setUsedFallback(boolean usedFallback) {
+        this.usedFallback = usedFallback;
     }
 }

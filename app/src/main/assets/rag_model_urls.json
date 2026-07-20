@@ -1,0 +1,13 @@
+{
+  "embedModelId": "all-minilm-l6-v2-onnx",
+  "rerankModelId": "ms-marco-minilm-l6-v2-onnx",
+  "vocabUrl": "",
+  "embedModelUrl": "",
+  "rerankModelUrl": "",
+  "_setup": [
+    "Models are bundled under assets/models/ (copied from models_export/).",
+    "ModelManager copies them into files/models/ on first prepare.",
+    "If URLs are empty, ModelManager falls back to Constants.DEFAULT_*_URL.",
+    "Optional: set HTTPS URLs here later to download instead of shipping in APK."
+  ]
+}

@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+models_export/
+app/src/main/assets/models/
+*.onnx

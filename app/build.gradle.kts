@@ -34,6 +34,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    androidResources {
+        noCompress += listOf("onnx", "txt")
+    }
 }
 
 dependencies {
@@ -41,6 +45,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.functions)
+    implementation(libs.onnxruntime.android)
+    implementation(libs.okhttp)
     implementation(libs.activity.ktx)
     implementation(libs.appcompat)
     implementation(libs.constraintlayout)
