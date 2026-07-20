@@ -6,7 +6,6 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.VectorQuery;
 import com.google.firebase.firestore.VectorValue;
 import com.google.firebase.firestore.WriteBatch;
 import com.hcmute.studymate.ml.VectorMath;
@@ -144,58 +143,14 @@ public class FirestoreChunkRepository implements ChunkRepository {
             callback.onError(new IllegalArgumentException("User id and query embedding are required"));
             return;
         }
+        // Mobile Firestore SDKs do not expose findNearest/VectorQuery (server SDKs only).
+        // Retrieve with on-device cosine over the user's synced noteChunks instead.
         int safeLimit = Math.max(1, Math.min(limit, Constants.EXAM_PREP_VECTOR_TOP_K));
-        tryVectorNearest(userId, queryEmbedding, safeLimit, new ListCallback<NoteChunk>() {
-            @Override
-            public void onSuccess(List<NoteChunk> items) {
-                if (items == null || items.isEmpty()) {
-                    cosineFallback(userId, queryEmbedding, safeLimit, callback);
-                    return;
-                }
-                callback.onSuccess(items);
-            }
-
-            @Override
-            public void onError(Exception exception) {
-                Log.w(TAG, "Firestore vector KNN unavailable, using cosine fallback", exception);
-                cosineFallback(userId, queryEmbedding, safeLimit, callback);
-            }
-        });
+        cosineNearest(userId, queryEmbedding, safeLimit, callback);
     }
 
-    private void tryVectorNearest(String userId, float[] queryEmbedding, int limit,
-                                  ListCallback<NoteChunk> callback) {
-        try {
-            float[] normalized = VectorMath.l2Normalize(queryEmbedding);
-            double[] doubles = new double[normalized.length];
-            for (int i = 0; i < normalized.length; i++) {
-                doubles[i] = normalized[i];
-            }
-            VectorValue vectorValue = FieldValue.vector(doubles);
-            VectorQuery vectorQuery = chunksRef(userId).findNearest(
-                    "embedding",
-                    vectorValue,
-                    limit,
-                    VectorQuery.DistanceMeasure.COSINE);
-            vectorQuery.get()
-                    .addOnSuccessListener(snapshot -> {
-                        List<NoteChunk> chunks = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : snapshot) {
-                            NoteChunk chunk = fromDocument(document);
-                            if (chunk != null) {
-                                chunks.add(chunk);
-                            }
-                        }
-                        callback.onSuccess(chunks);
-                    })
-                    .addOnFailureListener(callback::onError);
-        } catch (Exception exception) {
-            callback.onError(exception);
-        }
-    }
-
-    private void cosineFallback(String userId, float[] queryEmbedding, int limit,
-                                ListCallback<NoteChunk> callback) {
+    private void cosineNearest(String userId, float[] queryEmbedding, int limit,
+                               ListCallback<NoteChunk> callback) {
         getChunksForUser(userId, new ListCallback<NoteChunk>() {
             @Override
             public void onSuccess(List<NoteChunk> items) {
@@ -238,7 +193,12 @@ public class FirestoreChunkRepository implements ChunkRepository {
         List<Double> embedding = chunk.getEmbedding() == null ? new ArrayList<>() : chunk.getEmbedding();
         data.put("embeddingValues", embedding);
         try {
-            data.put("embedding", FieldValue.vector(embedding));
+            double[] doubles = new double[embedding.size()];
+            for (int i = 0; i < embedding.size(); i++) {
+                Double value = embedding.get(i);
+                doubles[i] = value == null ? 0.0 : value;
+            }
+            data.put("embedding", FieldValue.vector(doubles));
         } catch (Exception exception) {
             Log.w(TAG, "FieldValue.vector unavailable, storing list only", exception);
             data.put("embedding", embedding);
@@ -291,11 +251,6 @@ public class FirestoreChunkRepository implements ChunkRepository {
                 return values;
             } catch (Exception exception) {
                 Log.w(TAG, "Unable to read VectorValue.toArray()", exception);
-            }
-            try {
-                return ((VectorValue) embedding).toList();
-            } catch (Exception exception) {
-                Log.w(TAG, "Unable to read VectorValue.toList()", exception);
             }
         }
         return asDoubleList(embedding);
