@@ -3,237 +3,292 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/studymate_background">
+    android:background="@color/studymate_background"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:paddingStart="@dimen/screen_padding"
-        android:paddingTop="@dimen/space_2xl"
-        android:paddingEnd="@dimen/screen_padding"
-        android:paddingBottom="@dimen/space_md">
+        android:orientation="vertical">
 
+        <!-- Top Header App Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/listTitleText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/my_study_notes"
-                android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                android:textColor="@color/studymate_text_primary"
-                android:textStyle="bold" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/askNotesButton"
-                style="@style/StudyMateButtonText"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/ask_notes"
-                android:insetLeft="0dp"
-                android:insetTop="0dp"
-                android:insetRight="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="48dp"
-                android:text=""
-                app:icon="@drawable/ic_ask_24"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp"
-                app:iconTint="@color/studymate_secondary" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/statsButton"
-                style="@style/StudyMateButtonText"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/study_stats"
-                android:insetLeft="0dp"
-                android:insetTop="0dp"
-                android:insetRight="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="48dp"
-                android:text=""
-                app:icon="@drawable/ic_stats_24"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp"
-                app:iconTint="@color/studymate_primary" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/logoutButton"
-                style="@style/StudyMateButtonText"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@string/logout"
-                android:insetLeft="0dp"
-                android:insetTop="0dp"
-                android:insetRight="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="48dp"
-                android:text=""
-                app:icon="@drawable/ic_logout_24"
-                app:iconGravity="textStart"
-                app:iconPadding="0dp"
-                app:iconTint="@color/studymate_primary" />
-
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:text="@string/study_notes_subtitle"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="@color/studymate_text_secondary" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xl"
-            android:hint="@string/search_notes"
-            app:boxBackgroundColor="@color/studymate_surface"
-            app:boxBackgroundMode="filled"
-            app:boxCornerRadiusBottomEnd="@dimen/field_radius"
-            app:boxCornerRadiusBottomStart="@dimen/field_radius"
-            app:boxCornerRadiusTopEnd="@dimen/field_radius"
-            app:boxCornerRadiusTopStart="@dimen/field_radius"
-            app:boxStrokeColor="@color/studymate_outline"
-            app:startIconDrawable="@drawable/ic_search_24"
-            app:startIconTint="@color/studymate_text_secondary">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:imeOptions="actionSearch"
-                android:inputType="text" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:scrollbars="none">
+            android:background="@color/studymate_surface"
+            android:elevation="2dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/openTutorButton"
-                    style="@style/StudyMateButtonText"
-                    android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/listTitleText"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/tutor_title" />
+                    android:layout_weight="1"
+                    android:text="@string/my_study_notes"
+                    android:textColor="@color/studymate_text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/openExamPrepButton"
+                    android:id="@+id/askNotesButton"
                     style="@style/StudyMateButtonText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/exam_prep_short" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:contentDescription="@string/ask_notes"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="40dp"
+                    app:icon="@drawable/ic_ask_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconTint="@color/studymate_secondary" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/openQuizButton"
+                    android:id="@+id/statsButton"
                     style="@style/StudyMateButtonText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/quiz_short" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:contentDescription="@string/study_stats"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="40dp"
+                    app:icon="@drawable/ic_stats_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconTint="@color/studymate_primary" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/openReviewButton"
+                    android:id="@+id/logoutButton"
                     style="@style/StudyMateButtonText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/review_short" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/openKnowledgeGraphButton"
-                    style="@style/StudyMateButtonText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/knowledge_short" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/reindexButton"
-                    style="@style/StudyMateButtonText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/reindex_notes" />
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:contentDescription="@string/logout"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="40dp"
+                    app:icon="@drawable/ic_logout_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconTint="@color/studymate_text_secondary" />
             </LinearLayout>
-        </HorizontalScrollView>
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:clipToPadding="false"
-            android:overScrollMode="never"
-            android:scrollbars="none">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/categoryChipGroup"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:chipSpacingHorizontal="@dimen/space_sm"
-                app:singleLine="true"
-                app:singleSelection="true" />
-
-        </HorizontalScrollView>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="@dimen/space_md"
-            android:layout_weight="1">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/notesRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="104dp" />
 
             <TextView
-                android:id="@+id/emptyStateText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="@dimen/space_lg"
-                android:background="@drawable/bg_auth_panel"
-                android:gravity="center"
-                android:lineSpacingExtra="3dp"
-                android:padding="@dimen/space_xl"
-                android:text="No notes found"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:layout_marginTop="2dp"
+                android:text="@string/study_notes_subtitle"
                 android:textColor="@color/studymate_text_secondary"
-                android:visibility="gone" />
+                android:textSize="13sp" />
+        </LinearLayout>
 
-            <ProgressBar
-                android:id="@+id/notesLoadingProgress"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:visibility="gone" />
+        <!-- Main Content Area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp">
 
-        </FrameLayout>
+            <!-- Search Bar -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search_notes"
+                app:boxBackgroundColor="@color/studymate_surface"
+                app:boxBackgroundMode="filled"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeWidth="0dp"
+                app:startIconDrawable="@drawable/ic_search_24"
+                app:startIconTint="@color/studymate_text_secondary">
 
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:paddingVertical="10dp"
+                    android:textColor="@color/studymate_text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Quick AI Tools Scroll Container -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openTutorButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/tutor_title"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/studymate_primary_container"
+                        app:cornerRadius="19dp"
+                        app:icon="@drawable/ic_bot_24"
+                        app:iconTint="@color/studymate_primary"
+                        app:strokeWidth="0dp"
+                        android:textColor="@color/studymate_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openExamPrepButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/exam_prep_short"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/studymate_primary_container"
+                        app:cornerRadius="19dp"
+                        app:icon="@drawable/ic_summary_24"
+                        app:iconTint="@color/studymate_primary"
+                        app:strokeWidth="0dp"
+                        android:textColor="@color/studymate_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openQuizButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/quiz_short"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/studymate_primary_container"
+                        app:cornerRadius="19dp"
+                        app:icon="@drawable/ic_note_24"
+                        app:iconTint="@color/studymate_primary"
+                        app:strokeWidth="0dp"
+                        android:textColor="@color/studymate_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openReviewButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/review_short"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/studymate_primary_container"
+                        app:cornerRadius="19dp"
+                        app:icon="@drawable/ic_reminder_24"
+                        app:iconTint="@color/studymate_primary"
+                        app:strokeWidth="0dp"
+                        android:textColor="@color/studymate_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/openKnowledgeGraphButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/knowledge_short"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/studymate_primary_container"
+                        app:cornerRadius="19dp"
+                        app:icon="@drawable/ic_stats_24"
+                        app:iconTint="@color/studymate_primary"
+                        app:strokeWidth="0dp"
+                        android:textColor="@color/studymate_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/reindexButton"
+                        style="@style/StudyMateButtonText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="@string/reindex_notes"
+                        android:textSize="13sp"
+                        android:textColor="@color/studymate_text_secondary" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Category Chips -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/categoryChipGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipSpacingHorizontal="8dp"
+                    app:singleLine="true"
+                    app:singleSelection="true" />
+            </HorizontalScrollView>
+
+            <!-- Notes List -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/notesRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="88dp" />
+
+                <TextView
+                    android:id="@+id/emptyStateText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_auth_panel"
+                    android:gravity="center"
+                    android:lineSpacingExtra="3dp"
+                    android:padding="24dp"
+                    android:text="No notes found"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:textColor="@color/studymate_text_secondary"
+                    android:visibility="gone" />
+
+                <ProgressBar
+                    android:id="@+id/notesLoadingProgress"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+        </LinearLayout>
     </LinearLayout>
 
+    <!-- FAB Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addNoteFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/space_2xl"
+        android:layout_margin="24dp"
         android:contentDescription="Add note"
         app:backgroundTint="@color/studymate_primary"
         app:srcCompat="@drawable/ic_add_24"

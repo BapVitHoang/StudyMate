@@ -55,6 +55,10 @@ public class ExamPrepActivity extends AppCompatActivity {
         resultText = findViewById(R.id.examResultText);
         citationsContainer = findViewById(R.id.examCitationsContainer);
         findViewById(R.id.generateExamButton).setOnClickListener(view -> generate());
+        View backButton = findViewById(R.id.examPrepBackButton);
+        if (backButton != null) {
+            backButton.setOnClickListener(view -> finish());
+        }
     }
 
     private void generate() {

@@ -4,11 +4,11 @@ import com.hcmute.studymate.model.RetrievedChunk;
 
 import java.util.List;
 
-final class GeminiPromptBuilder {
+public final class GeminiPromptBuilder {
     private GeminiPromptBuilder() {
     }
 
-    static String summarize(String locale, String title, String category, String content) {
+    public static String summarize(String locale, String title, String category, String content) {
         return String.join("\n",
                 "You are StudyMate, an academic study-note assistant.",
                 "Summarize the note for a university student.",
@@ -31,7 +31,7 @@ final class GeminiPromptBuilder {
         );
     }
 
-    static String groundedAnswer(String locale, String question, List<RetrievedChunk> passages) {
+    public static String groundedAnswer(String locale, String question, List<RetrievedChunk> passages) {
         return String.join("\n",
                 "You are StudyMate, a grounded study tutor.",
                 "Answer the student using ONLY the provided passages.",
@@ -54,7 +54,7 @@ final class GeminiPromptBuilder {
         );
     }
 
-    static String tutor(String locale, String historyBlock, List<RetrievedChunk> passages) {
+    public static String tutor(String locale, String historyBlock, List<RetrievedChunk> passages) {
         return String.join("\n",
                 "You are StudyMate, a multi-turn grounded study tutor.",
                 "Continue the conversation using ONLY the provided passages plus chat history.",
@@ -75,7 +75,7 @@ final class GeminiPromptBuilder {
         );
     }
 
-    static String examPrep(String locale, String mode, String topic, List<RetrievedChunk> passages) {
+    public static String examPrep(String locale, String mode, String topic, List<RetrievedChunk> passages) {
         return String.join("\n",
                 "You are StudyMate, an exam-prep synthesizer.",
                 "Create a " + mode + " from ONLY the provided passages.",
@@ -97,7 +97,7 @@ final class GeminiPromptBuilder {
         );
     }
 
-    static String quiz(String locale, int questionCount, String typesCsv, List<RetrievedChunk> passages) {
+    public static String quiz(String locale, int questionCount, String typesCsv, List<RetrievedChunk> passages) {
         return String.join("\n",
                 "You are StudyMate, a grounded quiz generator.",
                 "Create " + questionCount + " study questions from ONLY the passages.",
@@ -124,7 +124,7 @@ final class GeminiPromptBuilder {
         );
     }
 
-    static String concepts(String locale, String noteId, String title, String content) {
+    public static String concepts(String locale, String noteId, String title, String content) {
         return String.join("\n",
                 "You are StudyMate, a knowledge-graph builder for study notes.",
                 "Extract concepts and relations from the note.",
@@ -145,7 +145,7 @@ final class GeminiPromptBuilder {
         );
     }
 
-    static String formatPassages(List<RetrievedChunk> passages) {
+    public static String formatPassages(List<RetrievedChunk> passages) {
         if (passages == null || passages.isEmpty()) {
             return "(none)";
         }

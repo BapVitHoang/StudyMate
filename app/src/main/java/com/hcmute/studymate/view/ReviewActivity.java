@@ -55,6 +55,10 @@ public class ReviewActivity extends AppCompatActivity {
         findViewById(R.id.reviewHardButton).setOnClickListener(view -> rate(SrsService.QUALITY_HARD));
         findViewById(R.id.reviewGoodButton).setOnClickListener(view -> rate(SrsService.QUALITY_GOOD));
         findViewById(R.id.reviewEasyButton).setOnClickListener(view -> rate(SrsService.QUALITY_EASY));
+        View backButton = findViewById(R.id.reviewBackButton);
+        if (backButton != null) {
+            backButton.setOnClickListener(view -> finish());
+        }
         loadDue();
     }
 

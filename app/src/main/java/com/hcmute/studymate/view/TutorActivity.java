@@ -64,9 +64,15 @@ public class TutorActivity extends AppCompatActivity {
         tutorInput = findViewById(R.id.tutorInput);
         followUpChipGroup = findViewById(R.id.followUpChipGroup);
         MaterialButton sendButton = findViewById(R.id.tutorSendButton);
+        View backButton = findViewById(R.id.tutorBackButton);
+        if (backButton != null) {
+            backButton.setOnClickListener(view -> finish());
+        }
 
         adapter = new MessageAdapter();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         sendButton.setOnClickListener(view -> sendCurrentInput());
     }
@@ -82,6 +88,7 @@ public class TutorActivity extends AppCompatActivity {
         sending = true;
         tutorInput.setText("");
         adapter.submit(session.getMessages());
+        scrollToBottom();
         tutorController.sendMessage(userId, session, text, Locale.getDefault().toLanguageTag(),
                 new DataCallback<TutorReply>() {
                     @Override
@@ -89,6 +96,7 @@ public class TutorActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             sending = false;
                             adapter.submit(session.getMessages());
+                            scrollToBottom();
                             renderFollowUps(data);
                             if (data.getCitations() != null) {
                                 for (RagCitation citation : data.getCitations()) {
@@ -113,6 +121,14 @@ public class TutorActivity extends AppCompatActivity {
                     }
                 });
         adapter.submit(session.getMessages());
+        scrollToBottom();
+    }
+
+    private void scrollToBottom() {
+        RecyclerView recyclerView = findViewById(R.id.tutorMessagesRecycler);
+        if (recyclerView != null && adapter != null && adapter.getItemCount() > 0) {
+            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+        }
     }
 
     private void renderFollowUps(TutorReply reply) {
@@ -159,16 +175,24 @@ public class TutorActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            TextView textView = (TextView) LayoutInflater.from(parent.getContext())
-                    .inflate(android.R.layout.simple_list_item_1, parent, false);
-            return new Holder(textView);
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_tutor_message, parent, false);
+            return new Holder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             TutorMessage message = items.get(position);
-            String role = TutorMessage.ROLE_USER.equals(message.getRole()) ? "You" : "Tutor";
-            holder.textView.setText(role + ": " + message.getContent());
+            boolean isUser = TutorMessage.ROLE_USER.equals(message.getRole());
+            if (isUser) {
+                holder.userContainer.setVisibility(View.VISIBLE);
+                holder.tutorContainer.setVisibility(View.GONE);
+                holder.userText.setText(message.getContent());
+            } else {
+                holder.tutorContainer.setVisibility(View.VISIBLE);
+                holder.userContainer.setVisibility(View.GONE);
+                holder.tutorText.setText(message.getContent());
+            }
         }
 
         @Override
@@ -177,11 +201,17 @@ public class TutorActivity extends AppCompatActivity {
         }
 
         static final class Holder extends RecyclerView.ViewHolder {
-            private final TextView textView;
+            private final View userContainer;
+            private final View tutorContainer;
+            private final TextView userText;
+            private final TextView tutorText;
 
-            Holder(TextView textView) {
-                super(textView);
-                this.textView = textView;
+            Holder(View itemView) {
+                super(itemView);
+                userContainer = itemView.findViewById(R.id.userMessageContainer);
+                tutorContainer = itemView.findViewById(R.id.tutorMessageContainer);
+                userText = itemView.findViewById(R.id.userMessageText);
+                tutorText = itemView.findViewById(R.id.tutorMessageText);
             }
         }
     }

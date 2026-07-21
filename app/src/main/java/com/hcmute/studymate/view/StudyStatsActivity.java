@@ -54,6 +54,10 @@ public class StudyStatsActivity extends AppCompatActivity {
         loadingProgress = findViewById(R.id.statsLoadingProgress);
         MaterialButton backButton = findViewById(R.id.statsBackButton);
         backButton.setOnClickListener(view -> finish());
+        View headerBackButton = findViewById(R.id.statsHeaderBackButton);
+        if (headerBackButton != null) {
+            headerBackButton.setOnClickListener(view -> finish());
+        }
         loadStats();
     }
 

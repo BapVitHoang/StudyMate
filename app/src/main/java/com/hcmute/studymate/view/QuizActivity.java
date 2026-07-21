@@ -71,6 +71,10 @@ public class QuizActivity extends AppCompatActivity {
         findViewById(R.id.generateQuizButton).setOnClickListener(view -> generate());
         findViewById(R.id.quizCheckButton).setOnClickListener(view -> checkAnswer());
         findViewById(R.id.quizNextButton).setOnClickListener(view -> nextQuestion());
+        View backButton = findViewById(R.id.quizBackButton);
+        if (backButton != null) {
+            backButton.setOnClickListener(view -> finish());
+        }
     }
 
     private void generate() {

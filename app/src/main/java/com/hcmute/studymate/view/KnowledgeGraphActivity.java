@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +54,10 @@ public class KnowledgeGraphActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
         findViewById(R.id.rebuildGapsButton).setOnClickListener(view -> rebuildGaps());
+        View backButton = findViewById(R.id.kgBackButton);
+        if (backButton != null) {
+            backButton.setOnClickListener(view -> finish());
+        }
         reload();
     }
 
