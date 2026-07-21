@@ -158,6 +158,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         deleteButton.setOnClickListener(view -> confirmDelete());
         summarizeButton.setOnClickListener(view -> summarizeCurrentNote());
         reminderButton.setOnClickListener(view -> showReminderPicker());
+        focusTimeText.setOnClickListener(view -> showFocusDurationPicker());
         startFocusButton.setOnClickListener(view -> startFocusSession());
         pauseFocusButton.setOnClickListener(view -> toggleFocusPause());
         stopFocusButton.setOnClickListener(view -> stopFocusSession());
@@ -488,6 +489,82 @@ public class NoteDetailActivity extends AppCompatActivity {
         });
     }
 
+    private long selectedFocusDuration = DEFAULT_FOCUS_DURATION;
+
+    private void showFocusDurationPicker() {
+        if (focusTimerService != null && focusTimerService.hasActiveSession()) {
+            Toast.makeText(this, "Stop current focus session to change duration", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String[] options = new String[]{"15 minutes", "25 minutes (Pomodoro)", "45 minutes", "60 minutes", "Custom minutes..."};
+        new AlertDialog.Builder(this)
+                .setTitle("Select focus duration")
+                .setItems(options, (dialog, which) -> {
+                    switch (which) {
+                        case 0:
+                            setFocusDuration(15L * 60L * 1000L);
+                            break;
+                        case 1:
+                            setFocusDuration(25L * 60L * 1000L);
+                            break;
+                        case 2:
+                            setFocusDuration(45L * 60L * 1000L);
+                            break;
+                        case 3:
+                            setFocusDuration(60L * 60L * 1000L);
+                            break;
+                        case 4:
+                            showCustomFocusDurationInput();
+                            break;
+                    }
+                })
+                .show();
+    }
+
+    private void showCustomFocusDurationInput() {
+        TextInputLayout inputLayout = new TextInputLayout(this);
+        inputLayout.setHint("Minutes (1 - 180)");
+        inputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_FILLED);
+        int padding = getResources().getDimensionPixelSize(R.dimen.space_lg);
+        inputLayout.setPadding(padding, 0, padding, 0);
+
+        TextInputEditText input = new TextInputEditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setText(String.valueOf(selectedFocusDuration / (60L * 1000L)));
+        inputLayout.addView(input);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Custom focus time")
+                .setView(inputLayout)
+                .setPositiveButton("Set", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(openDialog -> dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(button -> {
+                    String str = input.getText() == null ? "" : input.getText().toString().trim();
+                    try {
+                        long mins = Long.parseLong(str);
+                        if (mins < 1 || mins > 180) {
+                            inputLayout.setError("Enter between 1 and 180 minutes");
+                            return;
+                        }
+                        setFocusDuration(mins * 60L * 1000L);
+                        dialog.dismiss();
+                    } catch (NumberFormatException e) {
+                        inputLayout.setError("Invalid number");
+                    }
+                }));
+        dialog.show();
+    }
+
+    private void setFocusDuration(long millis) {
+        selectedFocusDuration = millis;
+        long mins = millis / (60L * 1000L);
+        startFocusButton.setText("Start " + mins + "m");
+        renderFocusState(selectedFocusDuration, false, false);
+    }
+
     private void startFocusSession() {
         if (currentNote == null) {
             return;
@@ -496,13 +573,13 @@ public class NoteDetailActivity extends AppCompatActivity {
         intent.setAction(FocusTimerService.ACTION_START);
         intent.putExtra(FocusTimerService.EXTRA_NOTE_ID, currentNote.getId());
         intent.putExtra(FocusTimerService.EXTRA_NOTE_TITLE, currentNote.getTitle());
-        intent.putExtra(FocusTimerService.EXTRA_DURATION_MILLIS, DEFAULT_FOCUS_DURATION);
+        intent.putExtra(FocusTimerService.EXTRA_DURATION_MILLIS, selectedFocusDuration);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
         } else {
             startService(intent);
         }
-        renderFocusState(DEFAULT_FOCUS_DURATION, true, true);
+        renderFocusState(selectedFocusDuration, true, true);
     }
 
     private void toggleFocusPause() {
@@ -715,32 +792,17 @@ public class NoteDetailActivity extends AppCompatActivity {
         playButton.setText(recording.getPath() != null && recording.getPath().equals(playingRecordingPath) ? "Stop" : "Play");
         playButton.setOnClickListener(view -> playVoiceRecording(recording.getPath()));
 
-        MaterialButton deleteButton = new MaterialButton(this);
+        MaterialButton deleteButton = new MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
         deleteButton.setText("Delete");
-        deleteButton.setVisibility(View.GONE);
         deleteButton.setTextColor(getColor(R.color.studymate_danger));
+        deleteButton.setStrokeColor(android.content.res.ColorStateList.valueOf(getColor(R.color.studymate_danger)));
+        LinearLayout.LayoutParams deleteParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        deleteParams.setMarginStart(getResources().getDimensionPixelSize(R.dimen.space_xs));
+        deleteButton.setLayoutParams(deleteParams);
         deleteButton.setOnClickListener(view -> confirmDeleteRecording(recording));
-
-        final float[] downX = new float[1];
-        row.setOnTouchListener((view, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                downX[0] = event.getX();
-                return true;
-            }
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                float deltaX = event.getX() - downX[0];
-                if (deltaX < -80f) {
-                    deleteButton.setVisibility(View.VISIBLE);
-                    return true;
-                }
-                if (deltaX > 80f) {
-                    deleteButton.setVisibility(View.GONE);
-                    return true;
-                }
-                view.performClick();
-            }
-            return true;
-        });
 
         row.addView(label);
         row.addView(playButton);

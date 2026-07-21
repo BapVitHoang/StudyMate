@@ -89,6 +89,7 @@ public final class AppContainer {
     private static final CloudConceptRepository CLOUD_CONCEPT_REPOSITORY = new CloudConceptRepository();
     private static final FirestoreConceptRepository CONCEPT_REPOSITORY = new FirestoreConceptRepository();
 
+    private static NoteRepository noteRepository;
     private static ModelManager modelManager;
     private static LocalEmbeddingEngine embeddingEngine;
     private static LocalReranker reranker;
@@ -108,6 +109,8 @@ public final class AppContainer {
         if (initialized) {
             return;
         }
+        noteRepository = new com.hcmute.studymate.repository.LocalCachedNoteRepository(
+                context, new FirestoreNoteRepository());
         modelManager = new ModelManager(context);
         embeddingEngine = new LocalEmbeddingEngine(modelManager);
         reranker = new LocalReranker(modelManager);
@@ -143,7 +146,7 @@ public final class AppContainer {
 
     public static NoteController noteController() {
         requireInit();
-        return new NoteController(new NoteService(NOTE_REPOSITORY, indexingService));
+        return new NoteController(new NoteService(noteRepository, indexingService));
     }
 
     public static CategoryController categoryController() {
@@ -156,7 +159,7 @@ public final class AppContainer {
     }
 
     public static ReminderController reminderController() {
-        return new ReminderController(new ReminderService(REMINDER_REPOSITORY, NOTE_REPOSITORY));
+        return new ReminderController(new ReminderService(REMINDER_REPOSITORY, noteRepository));
     }
 
     public static SummaryController summaryController() {
