@@ -207,6 +207,17 @@
                 android:textColor="@color/studymate_primary"
                 android:textStyle="bold" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/focusDurationButton"
+                style="@style/StudyMateButtonOutlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:text="Duration: 25m"
+                app:icon="@drawable/ic_timer_24"
+                app:iconGravity="textStart"
+                app:iconTint="@color/studymate_primary" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

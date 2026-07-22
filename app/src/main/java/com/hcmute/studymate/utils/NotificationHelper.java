@@ -15,7 +15,6 @@ import com.hcmute.studymate.R;
 import com.hcmute.studymate.model.Note;
 import com.hcmute.studymate.model.Reminder;
 import com.hcmute.studymate.view.NoteDetailActivity;
-import com.hcmute.studymate.view.NoteListActivity;
 
 public final class NotificationHelper {
     public static final String EXTRA_NOTE_ID = "extra_note_id";
@@ -24,8 +23,6 @@ public final class NotificationHelper {
 
     private static final String CHANNEL_ID = "study_reminders";
     private static final String CHANNEL_NAME = "Study reminders";
-    private static final String REVIEW_CHANNEL_ID = "daily_review";
-    private static final String REVIEW_CHANNEL_NAME = "Daily review";
     private static final String REMINDER_ACTION = "com.hcmute.studymate.REMINDER";
 
     private NotificationHelper() {
@@ -95,48 +92,6 @@ public final class NotificationHelper {
         }
     }
 
-    public static void showDailyReviewNotification(Context context, int reviewCount, String firstTitle) {
-        if (context == null || reviewCount <= 0 || !canPostNotifications(context)) {
-            return;
-        }
-
-        Context appContext = context.getApplicationContext();
-        createDailyReviewChannel(appContext);
-
-        Intent listIntent = new Intent(appContext, NoteListActivity.class);
-        listIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent contentIntent = PendingIntent.getActivity(
-                appContext,
-                2407,
-                listIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        String title = "Daily StudyMate review";
-        String content = reviewCount == 1
-                ? "One note is ready to review: " + safeTitle(firstTitle)
-                : reviewCount + " notes are ready to review.";
-
-        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? new Notification.Builder(appContext, REVIEW_CHANNEL_ID)
-                : new Notification.Builder(appContext);
-
-        Notification notification = builder
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(content)
-                .setStyle(new Notification.BigTextStyle().bigText(content))
-                .setContentIntent(contentIntent)
-                .setAutoCancel(true)
-                .build();
-
-        NotificationManager notificationManager =
-                (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null) {
-            notificationManager.notify(2407, notification);
-        }
-    }
-
     public static boolean canPostNotifications(Context context) {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
                 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
@@ -162,26 +117,6 @@ public final class NotificationHelper {
         notificationManager.createNotificationChannel(channel);
     }
 
-    private static void createDailyReviewChannel(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
-
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager == null || notificationManager.getNotificationChannel(REVIEW_CHANNEL_ID) != null) {
-            return;
-        }
-
-        NotificationChannel channel = new NotificationChannel(
-                REVIEW_CHANNEL_ID,
-                REVIEW_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-        );
-        channel.setDescription("Daily reminders to review older StudyMate notes");
-        notificationManager.createNotificationChannel(channel);
-    }
-
     private static int buildRequestCode(String noteId) {
         return noteId == null ? 0 : noteId.hashCode();
     }
@@ -190,7 +125,4 @@ public final class NotificationHelper {
         return value == null || value.trim().isEmpty();
     }
 
-    private static String safeTitle(String title) {
-        return isBlank(title) ? "your study note" : title;
-    }
 }

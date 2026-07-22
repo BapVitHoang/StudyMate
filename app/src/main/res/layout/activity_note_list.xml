@@ -54,22 +54,6 @@
                     app:iconTint="@color/studymate_secondary" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/statsButton"
-                    style="@style/StudyMateButtonText"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:contentDescription="@string/study_stats"
-                    android:insetLeft="0dp"
-                    android:insetTop="0dp"
-                    android:insetRight="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="40dp"
-                    app:icon="@drawable/ic_stats_24"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconTint="@color/studymate_primary" />
-
-                <com.google.android.material.button.MaterialButton
                     android:id="@+id/logoutButton"
                     style="@style/StudyMateButtonText"
                     android:layout_width="40dp"

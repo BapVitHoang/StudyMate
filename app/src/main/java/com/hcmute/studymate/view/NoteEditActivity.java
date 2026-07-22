@@ -28,7 +28,6 @@ import com.hcmute.studymate.utils.ChecklistUtils;
 import com.hcmute.studymate.utils.Constants;
 import com.hcmute.studymate.utils.DataCallback;
 import com.hcmute.studymate.utils.ListCallback;
-import com.hcmute.studymate.utils.NoteTemplateUtils;
 import com.hcmute.studymate.utils.OperationCallback;
 import com.hcmute.studymate.utils.TagUtils;
 
@@ -37,7 +36,6 @@ import java.util.List;
 
 public class NoteEditActivity extends AppCompatActivity {
     private static final String EXTRA_NOTE_ID = "extra_note_id";
-    private static final String EXTRA_TEMPLATE_NAME = "extra_template_name";
 
     private AuthController authController;
     private NoteController noteController;
@@ -67,12 +65,6 @@ public class NoteEditActivity extends AppCompatActivity {
         if (noteId != null) {
             intent.putExtra(EXTRA_NOTE_ID, noteId);
         }
-        return intent;
-    }
-
-    public static Intent newTemplateIntent(Context context, String templateName) {
-        Intent intent = new Intent(context, NoteEditActivity.class);
-        intent.putExtra(EXTRA_TEMPLATE_NAME, templateName);
         return intent;
     }
 
@@ -120,11 +112,6 @@ public class NoteEditActivity extends AppCompatActivity {
         if (noteId != null) {
             screenTitleText.setText(R.string.edit_note);
             loadNote(noteId);
-        } else {
-            String templateName = getIntent().getStringExtra(EXTRA_TEMPLATE_NAME);
-            if (templateName != null && !templateName.trim().isEmpty()) {
-                applyTemplate(templateName, true);
-            }
         }
         loadCategories();
         updateSaveState(false);
@@ -260,19 +247,6 @@ public class NoteEditActivity extends AppCompatActivity {
                 showError("Could not add category", exception);
             }
         });
-    }
-
-    private void applyTemplate(String templateName, boolean replaceExisting) {
-        if (replaceExisting || readInput(titleInput).isEmpty()) {
-            titleInput.setText(templateName);
-        }
-        if (replaceExisting || readInput(contentInput).isEmpty()) {
-            contentInput.setText(NoteTemplateUtils.contentFor(templateName));
-        }
-        if (replaceExisting || readInput(checklistInput).isEmpty()) {
-            checklistInput.setText(NoteTemplateUtils.checklistFor(templateName));
-        }
-        updateSaveState(false);
     }
 
     private void setCategorySelection(String category) {

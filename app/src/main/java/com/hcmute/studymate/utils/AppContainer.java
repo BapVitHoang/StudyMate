@@ -13,7 +13,6 @@ import com.hcmute.studymate.controller.RagController;
 import com.hcmute.studymate.controller.ReminderController;
 import com.hcmute.studymate.controller.SearchController;
 import com.hcmute.studymate.controller.SummaryController;
-import com.hcmute.studymate.controller.StudySessionController;
 import com.hcmute.studymate.controller.TutorController;
 import com.hcmute.studymate.ml.LocalEmbeddingEngine;
 import com.hcmute.studymate.ml.LocalReranker;
@@ -37,7 +36,6 @@ import com.hcmute.studymate.repository.FirestoreExamPrepRepository;
 import com.hcmute.studymate.repository.FirestoreNoteRepository;
 import com.hcmute.studymate.repository.FirestoreQuizRepository;
 import com.hcmute.studymate.repository.FirestoreReminderRepository;
-import com.hcmute.studymate.repository.FirestoreStudySessionRepository;
 import com.hcmute.studymate.repository.FirestoreTutorSessionRepository;
 import com.hcmute.studymate.repository.HybridAiSummaryRepository;
 import com.hcmute.studymate.repository.HybridRagRepository;
@@ -45,7 +43,6 @@ import com.hcmute.studymate.repository.LocalAiSummaryRepository;
 import com.hcmute.studymate.repository.LocalExtractiveRagRepository;
 import com.hcmute.studymate.repository.NoteRepository;
 import com.hcmute.studymate.repository.ReminderRepository;
-import com.hcmute.studymate.repository.StudySessionRepository;
 import com.hcmute.studymate.service.AuthService;
 import com.hcmute.studymate.service.CategoryService;
 import com.hcmute.studymate.service.ExamPrepService;
@@ -59,7 +56,6 @@ import com.hcmute.studymate.service.ReminderService;
 import com.hcmute.studymate.service.SearchService;
 import com.hcmute.studymate.service.SrsService;
 import com.hcmute.studymate.service.SummaryService;
-import com.hcmute.studymate.service.StudySessionService;
 import com.hcmute.studymate.service.TutorService;
 
 public final class AppContainer {
@@ -67,7 +63,6 @@ public final class AppContainer {
     private static final NoteRepository NOTE_REPOSITORY = new FirestoreNoteRepository();
     private static final CategoryRepository CATEGORY_REPOSITORY = new FirestoreCategoryRepository();
     private static final ReminderRepository REMINDER_REPOSITORY = new FirestoreReminderRepository();
-    private static final StudySessionRepository STUDY_SESSION_REPOSITORY = new FirestoreStudySessionRepository();
     private static final ChunkRepository CHUNK_REPOSITORY = new FirestoreChunkRepository();
     private static final AiSummaryRepository AI_SUMMARY_REPOSITORY = new HybridAiSummaryRepository(
             new CloudAiSummaryRepository(),
@@ -161,10 +156,6 @@ public final class AppContainer {
 
     public static SummaryController summaryController() {
         return new SummaryController(new SummaryService(AI_SUMMARY_REPOSITORY));
-    }
-
-    public static StudySessionController studySessionController() {
-        return new StudySessionController(new StudySessionService(STUDY_SESSION_REPOSITORY));
     }
 
     public static IndexingController indexingController() {

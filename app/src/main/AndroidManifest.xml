@@ -38,9 +38,6 @@
             android:name=".view.NoteDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".view.StudyStatsActivity"
-            android:exported="false" />
-        <activity
             android:name=".view.NoteEditActivity"
             android:exported="false" />
         <activity

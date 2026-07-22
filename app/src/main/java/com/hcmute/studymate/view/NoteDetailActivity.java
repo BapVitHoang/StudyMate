@@ -14,6 +14,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.InputType;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
@@ -34,7 +35,6 @@ import com.hcmute.studymate.controller.KnowledgeGraphController;
 import com.hcmute.studymate.controller.NoteController;
 import com.hcmute.studymate.controller.ReminderController;
 import com.hcmute.studymate.controller.SummaryController;
-import com.hcmute.studymate.controller.StudySessionController;
 import com.hcmute.studymate.model.ChecklistItem;
 import com.hcmute.studymate.model.Note;
 import com.hcmute.studymate.model.SummarizeRequest;
@@ -65,7 +65,6 @@ public class NoteDetailActivity extends AppCompatActivity {
     private NoteController noteController;
     private ReminderController reminderController;
     private SummaryController summaryController;
-    private StudySessionController studySessionController;
     private TextView titleText;
     private TextView categoryText;
     private TextView statusText;
@@ -83,6 +82,7 @@ public class NoteDetailActivity extends AppCompatActivity {
     private TextView recordingStatusText;
     private LinearLayout recordingsContainer;
     private MaterialButton pinButton;
+    private MaterialButton focusDurationButton;
     private MaterialButton startFocusButton;
     private MaterialButton pauseFocusButton;
     private MaterialButton stopFocusButton;
@@ -98,6 +98,7 @@ public class NoteDetailActivity extends AppCompatActivity {
     private boolean voiceBound;
     private MediaPlayer mediaPlayer;
     private String playingRecordingPath;
+    private long selectedFocusDurationMillis = DEFAULT_FOCUS_DURATION;
     private boolean summarizing;
     public static Intent newIntent(Context context, String noteId) {
         Intent intent = new Intent(context, NoteDetailActivity.class);
@@ -117,8 +118,6 @@ public class NoteDetailActivity extends AppCompatActivity {
         noteController = AppContainer.noteController();
         reminderController = AppContainer.reminderController();
         summaryController = AppContainer.summaryController();
-        studySessionController = AppContainer.studySessionController();
-
         titleText = findViewById(R.id.detailTitleText);
         categoryText = findViewById(R.id.detailCategoryText);
         statusText = findViewById(R.id.detailStatusText);
@@ -141,6 +140,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         summarizeButton = findViewById(R.id.summarizeNoteButton);
         MaterialButton reminderButton = findViewById(R.id.reminderNoteButton);
         pinButton = findViewById(R.id.pinNoteButton);
+        focusDurationButton = findViewById(R.id.focusDurationButton);
         startFocusButton = findViewById(R.id.startFocusButton);
         pauseFocusButton = findViewById(R.id.pauseFocusButton);
         stopFocusButton = findViewById(R.id.stopFocusButton);
@@ -158,6 +158,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         deleteButton.setOnClickListener(view -> confirmDelete());
         summarizeButton.setOnClickListener(view -> summarizeCurrentNote());
         reminderButton.setOnClickListener(view -> showReminderPicker());
+        focusDurationButton.setOnClickListener(view -> showFocusDurationDialog());
         startFocusButton.setOnClickListener(view -> startFocusSession());
         pauseFocusButton.setOnClickListener(view -> toggleFocusPause());
         stopFocusButton.setOnClickListener(view -> stopFocusSession());
@@ -170,7 +171,7 @@ public class NoteDetailActivity extends AppCompatActivity {
         });
         extractConceptsButton.setOnClickListener(view -> extractConceptsFromNote());
         requestNotificationPermissionIfNeeded();
-        renderFocusState(DEFAULT_FOCUS_DURATION, false, false);
+        renderFocusState(selectedFocusDurationMillis, false, false);
     }
 
     @Override
@@ -496,13 +497,13 @@ public class NoteDetailActivity extends AppCompatActivity {
         intent.setAction(FocusTimerService.ACTION_START);
         intent.putExtra(FocusTimerService.EXTRA_NOTE_ID, currentNote.getId());
         intent.putExtra(FocusTimerService.EXTRA_NOTE_TITLE, currentNote.getTitle());
-        intent.putExtra(FocusTimerService.EXTRA_DURATION_MILLIS, DEFAULT_FOCUS_DURATION);
+        intent.putExtra(FocusTimerService.EXTRA_DURATION_MILLIS, selectedFocusDurationMillis);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
         } else {
             startService(intent);
         }
-        renderFocusState(DEFAULT_FOCUS_DURATION, true, true);
+        renderFocusState(selectedFocusDurationMillis, true, true);
     }
 
     private void toggleFocusPause() {
@@ -525,7 +526,52 @@ public class NoteDetailActivity extends AppCompatActivity {
             intent.setAction(FocusTimerService.ACTION_STOP);
             startService(intent);
         }
-        renderFocusState(DEFAULT_FOCUS_DURATION, false, false);
+        renderFocusState(selectedFocusDurationMillis, false, false);
+    }
+
+    private void showFocusDurationDialog() {
+        TextInputLayout inputLayout = new TextInputLayout(this);
+        inputLayout.setHint("Focus minutes");
+        inputLayout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_FILLED);
+        int padding = getResources().getDimensionPixelSize(R.dimen.space_lg);
+        inputLayout.setPadding(padding, 0, padding, 0);
+
+        TextInputEditText input = new TextInputEditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setText(String.valueOf(getSelectedFocusMinutes()));
+        input.selectAll();
+        inputLayout.addView(input);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Focus duration")
+                .setView(inputLayout)
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(openDialog -> dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(button -> {
+                    String rawValue = input.getText() == null ? "" : input.getText().toString().trim();
+                    if (rawValue.isEmpty()) {
+                        inputLayout.setError("Minutes are required");
+                        return;
+                    }
+                    int minutes;
+                    try {
+                        minutes = Integer.parseInt(rawValue);
+                    } catch (NumberFormatException exception) {
+                        inputLayout.setError("Enter a valid number");
+                        return;
+                    }
+                    if (minutes < 1 || minutes > 180) {
+                        inputLayout.setError("Choose 1 to 180 minutes");
+                        return;
+                    }
+                    selectedFocusDurationMillis = minutes * 60L * 1000L;
+                    renderFocusState(selectedFocusDurationMillis, false, false);
+                    dialog.dismiss();
+                }));
+        dialog.show();
     }
 
     private void startVoiceRecording() {
@@ -861,12 +907,12 @@ public class NoteDetailActivity extends AppCompatActivity {
 
     private void syncFocusFromService() {
         if (focusTimerService == null || !focusTimerService.hasActiveSession()) {
-            renderFocusState(DEFAULT_FOCUS_DURATION, false, false);
+            renderFocusState(selectedFocusDurationMillis, false, false);
             return;
         }
         boolean sameNote = currentNote != null && currentNote.getId().equals(focusTimerService.getNoteId());
         renderFocusState(
-                sameNote ? focusTimerService.getRemainingMillis() : DEFAULT_FOCUS_DURATION,
+                sameNote ? focusTimerService.getRemainingMillis() : selectedFocusDurationMillis,
                 sameNote,
                 focusTimerService.isRunning()
         );
@@ -878,6 +924,9 @@ public class NoteDetailActivity extends AppCompatActivity {
         pauseFocusButton.setVisibility(active ? View.VISIBLE : View.GONE);
         stopFocusButton.setVisibility(active ? View.VISIBLE : View.GONE);
         pauseFocusButton.setText(running ? "Pause" : "Resume");
+        focusDurationButton.setEnabled(!active);
+        focusDurationButton.setText("Duration: " + getSelectedFocusMinutes() + "m");
+        startFocusButton.setText("Start " + getSelectedFocusMinutes() + "m");
     }
 
     private void handleFocusFinished(Intent intent) {
@@ -888,20 +937,8 @@ public class NoteDetailActivity extends AppCompatActivity {
         if (!currentNote.getId().equals(finishedNoteId)) {
             return;
         }
-        long durationMillis = intent.getLongExtra(FocusTimerService.EXTRA_DURATION_MILLIS, DEFAULT_FOCUS_DURATION);
-        studySessionController.saveCompletedSession(userId, currentNote, durationMillis, new OperationCallback() {
-            @Override
-            public void onSuccess() {
-                renderFocusState(DEFAULT_FOCUS_DURATION, false, false);
-                Toast.makeText(NoteDetailActivity.this, "Focus session saved", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(Exception exception) {
-                renderFocusState(DEFAULT_FOCUS_DURATION, false, false);
-                showError("Could not save focus session", exception);
-            }
-        });
+        renderFocusState(selectedFocusDurationMillis, false, false);
+        Toast.makeText(this, "Focus session completed", Toast.LENGTH_SHORT).show();
     }
 
     private String formatFocusTime(long millis) {
@@ -909,6 +946,10 @@ public class NoteDetailActivity extends AppCompatActivity {
         long minutes = totalSeconds / 60L;
         long seconds = totalSeconds % 60L;
         return String.format(java.util.Locale.US, "%02d:%02d", minutes, seconds);
+    }
+
+    private int getSelectedFocusMinutes() {
+        return (int) Math.max(1L, selectedFocusDurationMillis / 60000L);
     }
 
     private String normalizeStatus(String status) {
