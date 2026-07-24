@@ -1,5 +1,7 @@
 package com.hcmute.studymate.ai;
 
+import android.util.Log;
+
 import com.hcmute.studymate.BuildConfig;
 
 import org.json.JSONArray;
@@ -25,11 +27,21 @@ import okhttp3.ResponseBody;
  * Fine for coursework/demo; do not ship a production Play Store build this way.
  */
 public final class GeminiApiClient {
+    private static final String TAG = "GeminiApiClient";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    private static final String MODEL = "gemini-2.0-flash";
-    private static final String ENDPOINT =
-            "https://generativelanguage.googleapis.com/v1beta/models/"
-                    + MODEL + ":generateContent";
+
+    /**
+     * Prefer lighter / newer models first: free-tier keys often get 404 on retired
+     * 2.x models and 503 on overloaded premium Flash endpoints.
+     */
+    private static final String[] MODEL_CANDIDATES = {
+            "gemini-3.1-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-flash-latest",
+            "gemini-3-flash-preview"
+    };
+
+    private static final int MAX_ATTEMPTS_PER_MODEL = 3;
 
     public interface JsonCallback {
         void onSuccess(JSONObject json);
@@ -86,11 +98,51 @@ public final class GeminiApiClient {
         JSONObject body = new JSONObject()
                 .put("contents", new JSONArray().put(content))
                 .put("generationConfig", generationConfig);
+        String bodyJson = body.toString();
 
+        Exception lastError = null;
+        for (String model : MODEL_CANDIDATES) {
+            for (int attempt = 1; attempt <= MAX_ATTEMPTS_PER_MODEL; attempt++) {
+                try {
+                    return callModel(apiKey, model, bodyJson);
+                } catch (IOException exception) {
+                    lastError = exception;
+                    String message = exception.getMessage() == null ? "" : exception.getMessage();
+                    boolean retryable = message.contains("Gemini HTTP 503")
+                            || message.contains("Gemini HTTP 429")
+                            || message.contains("Gemini HTTP 500");
+                    boolean notFound = message.contains("Gemini HTTP 404");
+                    Log.w(TAG, "Model " + model + " attempt " + attempt + " failed: " + truncate(message, 180));
+                    if (notFound) {
+                        break; // try next model
+                    }
+                    if (retryable && attempt < MAX_ATTEMPTS_PER_MODEL) {
+                        Thread.sleep(700L * attempt);
+                        continue;
+                    }
+                    if (retryable) {
+                        break; // exhausted retries for this model, try next
+                    }
+                    throw exception;
+                }
+            }
+        }
+        if (lastError != null) {
+            throw lastError;
+        }
+        throw new IllegalStateException("No Gemini model candidates configured");
+    }
+
+    private JSONObject callModel(String apiKey, String model, String bodyJson) throws Exception {
+        String endpoint = "https://generativelanguage.googleapis.com/v1beta/models/"
+                + model + ":generateContent";
+
+        // Auth keys (AQ.*) require x-goog-api-key header.
         Request request = new Request.Builder()
-                .url(ENDPOINT + "?key=" + apiKey)
-                .post(RequestBody.create(body.toString(), JSON))
+                .url(endpoint)
+                .post(RequestBody.create(bodyJson, JSON))
                 .header("Content-Type", "application/json")
+                .header("x-goog-api-key", apiKey)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {

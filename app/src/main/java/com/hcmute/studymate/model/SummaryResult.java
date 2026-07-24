@@ -12,6 +12,7 @@ public class SummaryResult {
     private String source;
     private long generatedAt;
     private boolean usedFallback;
+    private String cloudFailureReason;
 
     public SummaryResult() {
     }
@@ -85,5 +86,13 @@ public class SummaryResult {
 
     public void setUsedFallback(boolean usedFallback) {
         this.usedFallback = usedFallback;
+    }
+
+    public String getCloudFailureReason() {
+        return cloudFailureReason;
+    }
+
+    public void setCloudFailureReason(String cloudFailureReason) {
+        this.cloudFailureReason = cloudFailureReason;
     }
 }

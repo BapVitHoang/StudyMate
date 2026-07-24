@@ -91,7 +91,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            app:boxBackgroundColor="@color/studymate_background"
+            app:boxBackgroundColor="@color/studymate_surface_soft"
             app:boxBackgroundMode="filled"
             app:boxCornerRadiusBottomEnd="24dp"
             app:boxCornerRadiusBottomStart="24dp"
@@ -99,18 +99,21 @@
             app:boxCornerRadiusTopStart="24dp"
             app:boxStrokeWidth="0dp"
             app:boxStrokeWidthFocused="0dp"
-            app:hintEnabled="false">
+            app:hintEnabled="false"
+            app:hintTextColor="@color/studymate_text_secondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tutorInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/tutor_hint"
-                android:inputType="textMultiLine"
+                android:inputType="textCapSentences|textMultiLine"
                 android:maxLines="4"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="10dp"
                 android:textColor="@color/studymate_text_primary"
+                android:textColorHint="@color/studymate_text_secondary"
+                android:textCursorDrawable="@null"
                 android:textSize="15sp" />
         </com.google.android.material.textfield.TextInputLayout>
 

@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -62,6 +63,9 @@ public class TutorActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.tutorMessagesRecycler);
         tutorInput = findViewById(R.id.tutorInput);
+        // Material DayNight can force light text onto our light input box — lock colors.
+        tutorInput.setTextColor(ContextCompat.getColor(this, R.color.studymate_text_primary));
+        tutorInput.setHintTextColor(ContextCompat.getColor(this, R.color.studymate_text_secondary));
         followUpChipGroup = findViewById(R.id.followUpChipGroup);
         MaterialButton sendButton = findViewById(R.id.tutorSendButton);
         View backButton = findViewById(R.id.tutorBackButton);
@@ -100,7 +104,6 @@ public class TutorActivity extends AppCompatActivity {
                             renderFollowUps(data);
                             if (data.getCitations() != null) {
                                 for (RagCitation citation : data.getCitations()) {
-                                    // Citations are shown via follow-up chips + toast excerpt.
                                 }
                             }
                             if (data.isUsedFallback()) {

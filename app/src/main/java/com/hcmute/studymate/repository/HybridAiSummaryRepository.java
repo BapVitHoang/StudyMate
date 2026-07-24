@@ -28,10 +28,14 @@ public class HybridAiSummaryRepository implements AiSummaryRepository {
             @Override
             public void onError(Exception exception) {
                 Log.w(TAG, "Cloud summarize failed, using local fallback", exception);
+                String cloudReason = exception == null || exception.getMessage() == null
+                        ? "unknown cloud error"
+                        : exception.getMessage();
                 localRepository.summarize(request, new SummaryCallback() {
                     @Override
                     public void onSuccess(SummaryResult result) {
                         result.setUsedFallback(true);
+                        result.setCloudFailureReason(cloudReason);
                         callback.onSuccess(result);
                     }
 

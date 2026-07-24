@@ -365,10 +365,19 @@ public class NoteDetailActivity extends AppCompatActivity {
                     public void onSuccess() {
                         setSummarizing(false);
                         renderNote();
-                        int messageRes = result.isUsedFallback()
-                                ? R.string.summary_generated_fallback
-                                : R.string.summary_generated_cloud;
-                        Toast.makeText(NoteDetailActivity.this, messageRes, Toast.LENGTH_SHORT).show();
+                        if (result.isUsedFallback()) {
+                            String reason = result.getCloudFailureReason();
+                            if (reason == null || reason.trim().isEmpty()) {
+                                reason = "unknown cloud error";
+                            }
+                            // Toast ignores multiline on many devices — put the real cause first.
+                            String message = "Cloud failed: " + reason
+                                    + " — offline summary was saved instead.";
+                            Toast.makeText(NoteDetailActivity.this, message, Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(NoteDetailActivity.this,
+                                    R.string.summary_generated_cloud, Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override

@@ -13,9 +13,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Gemini summarize via direct on-device API call (no Cloud Functions / Blaze).
- */
+
 public class CloudAiSummaryRepository implements AiSummaryRepository {
     private final GeminiApiClient geminiApiClient;
 
